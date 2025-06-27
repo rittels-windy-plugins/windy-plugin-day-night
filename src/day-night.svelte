@@ -169,11 +169,11 @@
     let marker;
     let useOwnTime = false;
 
-    log('plugin loaded', thisPlugin);
+  
 
     store.insert('day-night-picker-side', { def: 'right', allowed: ['left', 'right'], save: true });
 
-    log('aftr store', thisPlugin);
+ 
     // the checkbox on the left of the embed-window allows the user to activate the picker for this plugin (focus).
     // The picker will then display info in the left or right picker divs for this plugin.
     function focus() {
@@ -185,7 +185,7 @@
         thisPlugin.isFocused = true;
 
         let pickerSide = store.get('day-night-picker-side');
-        log('Picker SIDE', pickerSide);
+      
 
         // The pickerCtrl module maintains a list of plugins (LIFO) which uses either the left or right divs.
         // If you plan to use the left or right div,  add the name of this plugin to the picker,  with the following function:
@@ -210,9 +210,9 @@
         useOwnTime = uot;
     }
 
-    log('before onmount', thisPlugin);
+    
     onMount(() => {
-        log('Plugin mounted', thisPlugin);
+       
         init(thisPlugin, setUseOwnTime);
         node = thisPlugin.window.node;
 
@@ -237,10 +237,10 @@
         thisPlugin.focus = focus;
         thisPlugin.defocus = defocus;
 
-        log('Plugin mounted done');
+       
     });
 
-    log('before destroy', thisPlugin);
+ 
     onDestroy(() => {
         mainDiv.remove();
         document.body.classList.remove(`on${name}-info`);
@@ -255,7 +255,7 @@
         ////
     });
 
-    log('before export');
+ 
     export const onopen = _params => {
         if (_params && 'lon' in _params && !isNaN(_params.lat) && !isNaN(_params.lon)) {
             // Important:  onopen may actually occur before onmount (race condition).   So getPickerMarker here also.
@@ -269,9 +269,9 @@
             }
         }
     };
-    log('svelte end');
+ 
 </script>
 
 <style lang="less">
-    @import 'day-night.less?1751036977861';
+    @import 'day-night.less?1751037549363';
 </style>

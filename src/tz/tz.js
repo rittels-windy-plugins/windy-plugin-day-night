@@ -50,7 +50,7 @@ function initTzModule(importedMap) {
 
 async function loadData() {
     if (window.tz && window.tz.dataLoaded) {
-        log(window);
+        
         ({ timelims, up, allPolys, rules, regions } = window.tz);
         return;
     }
@@ -59,11 +59,9 @@ async function loadData() {
     return Promise.all([
         fetch(uniquePolys)
             .then(r => {
-                log(r);
                 return r.json();
             })
             .then(d => {
-                log(d);
                 up = d;
                 tz.up = up;
             }),
@@ -84,7 +82,6 @@ async function loadData() {
             .then(d => {
                 regions = d;
                 tz.regions = regions;
-                log(regions);
             }),
         fetch(ruleList)
             .then(r => r.json())
@@ -96,7 +93,7 @@ async function loadData() {
         window.tz.dataLoaded = true;
     });
 }
-loadData().then(() => log(up, timelims));
+loadData();//.then(() => log(up, timelims));
 
 function pointInPoly(ll, vs) {
     var x = ll.lon || ll.lng, //point[0],
@@ -114,7 +111,6 @@ function pointInPoly(ll, vs) {
 }
 
 function showTzPoly(geoJson, color) {
-    log('GH', geoJson, 'COLOR', color);
     if (!window.tz.dataLoaded) return;
     tz.singleTzLayer?.remove();
     tz.singleTzLayer = L.geoJSON(geoJson, { style: { color, fillOpacity: 0 }, interactive: false }).addTo(map);
@@ -232,14 +228,12 @@ let displayZones = (function () {
     let prevIx = null;
     let prevFiles = [];
     return function (ts, force = false) {
-        log("DIAPLY ZONES", ts);
-        log("FORS", force);
-        log('COLOR', color);
+        
         if (!window.tz.dataLoaded) return;
         let timeIx = timelims.findIndex(t => t > ts);
         if (timeIx == -1) timeIx = timelims.length - 1;
         else timeIx -= 1;
-        log('prev ix', prevIx, timeIx);
+      
         if (prevIx !== timeIx || force) {
             //document.getElementById("index").innerHTML = timeIx;
             let polys = up.filter(u => u.epochs.includes(timeIx));

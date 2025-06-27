@@ -273,7 +273,6 @@ function drawTimezones() {
 }
 
 function toggleTimezones(e) {
-    log("TZ", e, getts());
     if (e) displayZones(getts(), true); else removeZones();
 }
 
@@ -357,7 +356,7 @@ SunCalc.times.forEach((t, i) => {
     });
 });
 
-log(SunCalc);
+
 
 store.insert('day-night-custom-altitude', {
     def: 20,
@@ -366,7 +365,6 @@ store.insert('day-night-custom-altitude', {
 });
 SunCalc.times[6][0] = store.get('day-night-custom-altitude');
 
-log('suncalc', SunCalc);
 
 store.insert('day-night-opacity', { def: 0.1, allowed: v => v >= 0 && v <= 0.5, save: true });
 store.insert('day-night-utc-local', { def: 'local', allowed: ['utc', 'local'], save: true });
@@ -419,7 +417,6 @@ function makeUI() {
     let storedRow = store.get('day-night-times-4picker');
 
     SunCalc.times.forEach((t, i) => {
-        log(t);
         let row = document.createElement('tr');
         timeRows[i] = row;
         $('tbody', refs.dayNightTimesTable).appendChild(row);
@@ -502,16 +499,16 @@ function makeUI() {
 
     for (let setting of refs.dayNightSettings.rows) {
         let opts = Array.from(setting.querySelectorAll('.select-setting'));
-        log(setting, opts);
+        
         if (opts.length == 0) {
             // if not opt then is checkbox,
             let el = setting.firstChild;
             el.classList[store.get(setting.dataset.ref) ? "remove" : "add"]('checkbox--off');
-            log("STORE", store.get(setting.dataset.ref));
+            
             setting.addEventListener('click', e => {
                 el.classList.toggle('checkbox--off');
                 store.set(setting.dataset.ref, !el.classList.contains('checkbox--off'));
-                log(setting.dataset.ref,store.get(setting.dataset.ref));
+                
             });
         } else {
             opts.forEach(e => {
@@ -640,8 +637,6 @@ function getSunTimes(e) {
         let rdst = ruleAndDST(tzgj, dt.getTime());
         let { offset, rule, baseoff, ruleDescription } = rdst;
         if (store.get('show-picker-timezone')) {
-            log('tzgj', tzgj);
-            log('rdst', rdst);
             let absOff = abs(offset);
             showTzPoly(tzgj, absOff % 2 == 0 ? 'red' : absOff % 2 == 1 ? 'blue' : 'orange');
         }
@@ -665,7 +660,7 @@ function getSunTimes(e) {
                     : 'the ' + s + ord(s);
         };
 
-        log(ruleDescription);
+     
         if (ruleDescription) {
             tzSection.classList.remove('collapsed', 'hide-rows');
             ruleExists = true;
@@ -715,7 +710,7 @@ function watchForSunPosOpen(e) {
         pickerT.removeMarker(); // close my picker
         map.eachLayer(layer => {
             if (layer.options?.icon?.options?.className == 'dial') {
-                log(layer);
+               
                 sunPosMarker = layer;
                 sunPosMarker.on('drag', e => getSunTimes(e.latlng));
                 sunPosMarker.on('move', e => getSunTimes(e.latlng));
