@@ -27,6 +27,7 @@
     <div class="flex-container">
         <div class="plugin__title">Day Night</div>
         <div class="scrollable" data-ref="scrollable">
+            <!--
             <div class="toggle-section checkbox open size-l" data-ref="toggleLines">Select lines</div>
             <div class="section">
                 <table id="day-night-sun-table" data-ref="dayNightSunTable"><tbody></tbody></table>
@@ -98,14 +99,11 @@
                         </tr>
                         <tr data-ref="show-timezones">
                             <td class="checkbox" style="white-space:nowrap" colspan="2">Show time zones.</td>
-                            <!--  <td data-do="show" class="select-setting">Show</td>
-                        <td data-do="hide" class="select-setting">Hide</td>
-                    -->
+                           
                         </tr>
                         <tr data-ref="show-picker-timezone">
                             <td class="checkbox" style="white-space:nowrap" colspan="2">Show tz at picker.</td>
-                            <!--  <td data-do="show" class="select-setting">Show</td>
-                        <td data-do="hide" class="select-setting">Hide</td>  -->
+                            
                         </tr>
                     </tbody>
                 </table>
@@ -146,6 +144,7 @@
                     </table>
                 </div>
             </div>
+        -->
         </div>
         <Footer onFooterClick={onFooter} />
     </div>
@@ -278,5 +277,5 @@
 </script>
 
 <style lang="less">
-    @import 'daynight.less?1751035014007';
+    @import 'daynight.less?1751035621906';
 </style>
