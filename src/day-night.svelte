@@ -174,8 +174,8 @@
     let marker;
     let useOwnTime = false;
 
-    log("plugin mounted",thisPlugin);
-    
+    log("plugin loaded",thisPlugin);
+
     store.insert('day-night-picker-side', { def: 'right', allowed: ['left', 'right'], save: true });
 
     // the checkbox on the left of the embed-window allows the user to activate the picker for this plugin (focus).
@@ -215,6 +215,7 @@
     }
 
     onMount(() => {
+        log("Plugin mounted", thisPlugin);
         init(thisPlugin, setUseOwnTime);
         node = thisPlugin.window.node;
 
@@ -238,6 +239,20 @@
         focus();
         thisPlugin.focus = focus;
         thisPlugin.defocus = defocus;
+
+        log("Plugin mounted done");
+    });
+
+    onDestroy(() => {
+        mainDiv.remove();
+        document.body.classList.remove(`on${name}-info`);
+
+        //// This reopens the plugin if it is closed by another embedded plugin.
+        //   It should not be needed later,   then the whole plugin can then be moved into svelte,
+        //   open() requires an object
+        if (!closeButtonClicked) setTimeout(() => thisPlugin.open({}));
+        else closeCompletely();
+        ////
     });
 
     export const onopen = _params => {
@@ -253,20 +268,8 @@
             }
         }
     };
-
-    onDestroy(() => {
-        mainDiv.remove();
-        document.body.classList.remove(`on${name}-info`);
-
-        //// This reopens the plugin if it is closed by another embedded plugin.
-        //   It should not be needed later,   then the whole plugin can then be moved into svelte,
-        //   open() requires an object
-        if (!closeButtonClicked) setTimeout(() => thisPlugin.open({}));
-        else closeCompletely();
-        ////
-    });
 </script>
 
 <style lang="less">
-    @import 'day-night.less?1751032161572';
+    @import 'day-night.less?1751032073500';
 </style>
