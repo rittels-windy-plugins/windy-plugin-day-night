@@ -30,7 +30,7 @@
         "custom-windy-picker":"^1.0.11",
         "less": "4.2.0",
         "rollup-plugin-watch-globs": "2.0.1",
-        "ts-import": "^5.0.0-beta.0",
-        "prettier-plugin-svelte":"^3.4.0"
+        "ts-import": "^5.0.0-beta.0"
+        
     }
 }
