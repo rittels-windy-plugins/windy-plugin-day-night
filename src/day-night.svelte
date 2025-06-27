@@ -29,109 +29,121 @@
         <div class="scrollable" data-ref="scrollable">
             <div class="toggle-section checkbox open size-l" data-ref="toggleLines">Select lines</div>
             <div class="section">
-                <table id="day-night-sun-table" data-ref="dayNightSunTable"></table>
+                <table id="day-night-sun-table" data-ref="dayNightSunTable"><tbody></tbody></table>
                 <table>
-                    <tr>
-                        <td>Custom:</td>
-                        <td><input data-ref="customAlt" type="range" class="myrange" min="-89" max="89" /> </td>
-                    </tr>
-                    <tr>
-                        <td>Opacity:</td>
-                        <td><input data-ref="opacity" type="range" class="myrange" step="0.01" min="0" max="1" /> </td>
-                    </tr>
+                    <tbody>
+                        <tr>
+                            <td>Custom:</td>
+                            <td><input data-ref="customAlt" type="range" class="myrange" min="-89" max="89" /> </td>
+                        </tr>
+                        <tr>
+                            <td>Opacity:</td>
+                            <td><input data-ref="opacity" type="range" class="myrange" step="0.01" min="0" max="1" /> </td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
 
             <div class="toggle-section checkbox open size-l" data-ref="toggleTimes">Sun Times:</div>
             <div class="section">
                 <table data-ref="dayNightTimesTable">
-                    <tr
-                        ><td colspan="4" class="comment"
-                            >Select time-pair to display in the picker, or <span data-ref="clearPicker"><u>clear picker</u></span></td
-                        ></tr
-                    >
+                    <tbody>
+                        <tr
+                            ><td colspan="4" class="comment"
+                                >Select time-pair to display in the picker, or <span data-ref="clearPicker"><u>clear picker</u></span></td
+                            ></tr
+                        >
+                    </tbody>
                 </table>
             </div>
 
             <div class="toggle-section checkbox open size-l" data-ref="toggleTz">Time zone detail:</div>
             <div data-ref="tzSection" class="section tz-section collapsed">
                 <table id="day-night-tz-detail">
-                    <tr><td colspan="2" class="comment">Time zone detail of the picker position.</td></tr>
-                    <tr><td>Time zone:</td><td data-ref="tzName"></td></tr>
-                    <tr><td>Offset:</td><td data-ref="tzOffsetDST"></td></tr>
-                    <tr class="hideable"><td>Base offset:</td><td data-ref="tzOffset"></td></tr>
-                    <tr><td>DST Rule:</td><td data-ref="tzRule"></td></tr>
-                    <tr class="hideable"><td>Begin:</td><td data-ref="tzBeg"></td></tr>
-                    <tr class="hideable"><td>End:</td><td data-ref="tzEnd"></td></tr>
+                    <tbody>
+                        <tr><td colspan="2" class="comment">Time zone detail of the picker position.</td></tr>
+                        <tr><td>Time zone:</td><td data-ref="tzName"></td></tr>
+                        <tr><td>Offset:</td><td data-ref="tzOffsetDST"></td></tr>
+                        <tr class="hideable"><td>Base offset:</td><td data-ref="tzOffset"></td></tr>
+                        <tr><td>DST Rule:</td><td data-ref="tzRule"></td></tr>
+                        <tr class="hideable"><td>Begin:</td><td data-ref="tzBeg"></td></tr>
+                        <tr class="hideable"><td>End:</td><td data-ref="tzEnd"></td></tr>
+                    </tbody>
                 </table>
             </div>
 
             <div class="toggle-section checkbox open size-l" data-ref="toggleSettings">Settings:</div>
             <div class="section">
                 <table data-ref="dayNightSettings">
-                    <colgroup>
-                        <col style="width:30%" />
-                        <col style="width:35%" />
-                        <col style="width:35%" />
-                    </colgroup>
-                    <tr data-ref="select-time">
-                        <td>Time span:</td>
-                        <td data-do="windy" class="select-setting">Windy Calendar</td>
-                        <td data-do="own" class="select-setting">Full year</td>
-                    </tr>
-                    <tr data-ref="day-night-utc-local">
-                        <td>Picker time:</td>
-                        <td data-do="utc" class="select-setting">UTC</td>
-                        <td data-do="local" class="select-setting">Local</td>
-                    </tr>
-                    <tr data-ref="day-night-picker-side">
-                        <td>Picker side:</td>
-                        <td data-do="left" class="select-setting">Left</td>
-                        <td data-do="right" class="select-setting">Right</td>
-                    </tr>
-                    <tr data-ref="show-timezones">
-                        <td class="checkbox" style="white-space:nowrap" colspan="2">Show time zones.</td>
-                        <!--  <td data-do="show" class="select-setting">Show</td>
+                    <tbody>
+                        <colgroup>
+                            <col style="width:30%" />
+                            <col style="width:35%" />
+                            <col style="width:35%" />
+                        </colgroup>
+                        <tr data-ref="select-time">
+                            <td>Time span:</td>
+                            <td data-do="windy" class="select-setting">Windy Calendar</td>
+                            <td data-do="own" class="select-setting">Full year</td>
+                        </tr>
+                        <tr data-ref="day-night-utc-local">
+                            <td>Picker time:</td>
+                            <td data-do="utc" class="select-setting">UTC</td>
+                            <td data-do="local" class="select-setting">Local</td>
+                        </tr>
+                        <tr data-ref="day-night-picker-side">
+                            <td>Picker side:</td>
+                            <td data-do="left" class="select-setting">Left</td>
+                            <td data-do="right" class="select-setting">Right</td>
+                        </tr>
+                        <tr data-ref="show-timezones">
+                            <td class="checkbox" style="white-space:nowrap" colspan="2">Show time zones.</td>
+                            <!--  <td data-do="show" class="select-setting">Show</td>
                         <td data-do="hide" class="select-setting">Hide</td>
                     -->
-                    </tr>
-                    <tr data-ref="show-picker-timezone">
-                        <td class="checkbox" style="white-space:nowrap" colspan="2">Show tz at picker.</td>
-                        <!--  <td data-do="show" class="select-setting">Show</td>
-                        <td data-do="hide" class="select-setting">Hide</td>  -->
-                    </tr>
-
-                    <table>
-                        <tr>
-                            <td>Tz opacity:</td>
-                            <td colspan="2"><input data-ref="tzOpacity" type="range" class="myrange" min="0" max="1" step="0.01" /> </td>
                         </tr>
-                    </table>
+                        <tr data-ref="show-picker-timezone">
+                            <td class="checkbox" style="white-space:nowrap" colspan="2">Show tz at picker.</td>
+                            <!--  <td data-do="show" class="select-setting">Show</td>
+                        <td data-do="hide" class="select-setting">Hide</td>  -->
+                        </tr>
+
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <td>Tz opacity:</td>
+                                    <td colspan="2"><input data-ref="tzOpacity" type="range" class="myrange" min="0" max="1" step="0.01" /> </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </tbody>
                 </table>
             </div>
             <div data-ref="full-year" class:hidden={!useOwnTime}>
                 <div class="toggle-section checkbox open size-l">Select date:</div>
                 <div>
                     <table>
-                        <tr>
-                            <td>Time:</td>
-                            <td data-ref="valFullyearTime"></td>
-                            <td><input data-ref="fullyearTime" type="range" class="myrange" min="0" max="1440" /> </td>
-                        </tr>
-                        <tr>
-                            <td>Date:</td>
-                            <td data-ref="valFullyearDate"></td>
-                            <td
-                                ><input
-                                    data-ref="fullyearDate"
-                                    type="range"
-                                    class="myrange"
-                                    step="1"
-                                    min="0"
-                                    max={new Date().getUTCFullYear() % 4 == 0 ? '365' : '364'}
-                                />
-                            </td>
-                        </tr>
+                        <tbody>
+                            <tr>
+                                <td>Time:</td>
+                                <td data-ref="valFullyearTime"></td>
+                                <td><input data-ref="fullyearTime" type="range" class="myrange" min="0" max="1440" /> </td>
+                            </tr>
+                            <tr>
+                                <td>Date:</td>
+                                <td data-ref="valFullyearDate"></td>
+                                <td
+                                    ><input
+                                        data-ref="fullyearDate"
+                                        type="range"
+                                        class="myrange"
+                                        step="1"
+                                        min="0"
+                                        max={new Date().getUTCFullYear() % 4 == 0 ? '365' : '364'}
+                                    />
+                                </td>
+                            </tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -257,5 +269,5 @@
 </script>
 
 <style lang="less">
-    @import 'day-night.less?1751018581635';
+    @import 'day-night.less?1751018905308';
 </style>

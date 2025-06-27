@@ -1,6 +1,6 @@
 const config = {
     name: 'windy-plugin-day-night',
-    version: '0.0.1',
+    version: '0.0.2',
     icon: '🌅',
     title: 'Day Night',
     description: 'Display different terminator lines, and shows the times in the picker.<br>The plugin can be opened with <u>www.windy.com/plugin/day-night/lat/lon/yyyy-mm-ddThh:mm</u>',
