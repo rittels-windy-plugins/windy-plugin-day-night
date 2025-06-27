@@ -14,3 +14,4 @@ src/no-ex.svelte
 src/pluginConfig.ts     #comment out when pushing to gh
 src/global.less         #comment out when pushing to gh
 src/globalCss.less      #comment out when pushing to gh
+src/*.*__
