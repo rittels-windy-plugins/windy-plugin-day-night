@@ -29,7 +29,7 @@ This plugin shows the [solar terminator lines](https://en.wikipedia.org/wiki/Ter
 - select whether to show the timezone polygon for the picker position.
 - Set the opacity of the timezone shading.  
 
-Enjoy  T
+Enjoy  
 
 
 
