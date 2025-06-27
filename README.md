@@ -30,9 +30,3 @@ This plugin shows the [solar terminator lines](https://en.wikipedia.org/wiki/Ter
 - Set the opacity of the timezone shading.  
 
 Enjoy  
-
-
-
-
-
-
