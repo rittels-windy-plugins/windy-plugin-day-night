@@ -13,8 +13,8 @@ import { map, baseLayer } from '@windy/map';
 
 //import { Calendar } from '@windy/Calendar';
 
-import SunCalc from './SunCalc.mjs';
-import linesModule from './drawLines.mjs'; // methods:  drawLines,  removeSunLayers,  addSunLayers draws polygons based on timestamp.  Imports SunCalc
+import SunCalc from './SunCalc.js';
+import linesModule from './drawLines.js'; // methods:  drawLines,  removeSunLayers,  addSunLayers draws polygons based on timestamp.  Imports SunCalc
 import { initTzModule, findTzPoly, showTzPoly, removeTzPoly, ruleAndDST, displayZones, removeZones, zoneOpacity } from './tz/tz.js';
 
 import config from './pluginConfig.js';

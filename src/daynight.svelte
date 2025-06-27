@@ -158,7 +158,7 @@
     import store from '@windy/store';
 
     import Footer from './utils/Footer.svelte';
-    import { init, closeCompletely } from './daynight_main.js';
+    //import { init, closeCompletely } from './daynight_main.js';
     import { addDrag, showInfo, getWrapDiv, makeBottomRightHandle, makeTopLeftHandle, embedForTablet } from './utils/infoWinUtils.js';
     import { getPickerMarker } from 'custom-windy-picker';
 
@@ -218,7 +218,7 @@
      log("before onmount",thisPlugin);
     onMount(() => {
         log("Plugin mounted", thisPlugin);
-        init(thisPlugin, setUseOwnTime);
+       // init(thisPlugin, setUseOwnTime);
         node = thisPlugin.window.node;
 
         //  Info for this plugin is placed in a div appended to document.body,  get wrapDiv gets this div and creates it if needed.
@@ -253,8 +253,10 @@
         //// This reopens the plugin if it is closed by another embedded plugin.
         //   It should not be needed later,   then the whole plugin can then be moved into svelte,
         //   open() requires an object
+
         if (!closeButtonClicked) setTimeout(() => thisPlugin.open({}));
-        else closeCompletely();
+        //else closeCompletely();
+        
         ////
     });
 
@@ -276,5 +278,5 @@
 </script>
 
 <style lang="less">
-    @import 'daynight.less?1751033334083';
+    @import 'daynight.less?1751035014007';
 </style>

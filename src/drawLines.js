@@ -1,4 +1,4 @@
-import SunCalc from './SunCalc.mjs';
+import SunCalc from './SunCalc.js';
 import { map } from '@windy/map';
 import store from '@windy/store';
 
