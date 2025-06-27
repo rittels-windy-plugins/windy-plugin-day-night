@@ -107,15 +107,14 @@
                             <!--  <td data-do="show" class="select-setting">Show</td>
                         <td data-do="hide" class="select-setting">Hide</td>  -->
                         </tr>
-
-                        <table>
-                            <tbody>
-                                <tr>
-                                    <td>Tz opacity:</td>
-                                    <td colspan="2"><input data-ref="tzOpacity" type="range" class="myrange" min="0" max="1" step="0.01" /> </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    </tbody>
+                </table>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>Tz opacity:</td>
+                            <td colspan="2"><input data-ref="tzOpacity" type="range" class="myrange" min="0" max="1" step="0.01" /> </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -269,5 +268,5 @@
 </script>
 
 <style lang="less">
-    @import 'day-night.less?1751019079163';
+    @import 'day-night.less?1751019384280';
 </style>
