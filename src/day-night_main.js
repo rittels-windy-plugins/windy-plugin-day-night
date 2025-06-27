@@ -36,7 +36,7 @@ let ownDoty = getDayOfYear(Date.now());
 let ownTs;
 
 let useOwnTime = false;
-let setUseOwnTime = () => {};
+let setUseOwnTime = () => { };
 
 //let userSelParticles = store.get('particlesAnim');
 //let particlesOff4Zoom = false;
@@ -240,6 +240,11 @@ function capStr(s) {
     return (s.slice(0, 1).toUpperCase() + s.slice(1)).replace(/([A-Z])/g, ' $1').trim();
 }
 
+/** returns either windy ts or ownTs,  depending on useOwnTs, *  thus remembers ownTs,  when going back and forth between windy or useOwn*/
+function getts() {
+    return useOwnTime ? ownTs : store.get('timestamp')
+}
+
 function onTimestamp(ts) {
     drawLines(ts);
     drawTimezones(ts);
@@ -257,8 +262,8 @@ function drawLines(ts) {
 
 function drawTimezones() {
     let opacity = store.get('timezone-opacity');
-    if (store.get('show-timezones') == 'show') {
-        displayZones(useOwnTime ? ownTs : store.get('timestamp'), true, {
+    if (store.get('show-timezones')) {
+        displayZones(getts(), true, {
             odd: `rgba(0,0,0,${opacity})`,
             even: `rgba(255,255,255,${opacity})`,
             half: `rgba(255,50,0,${opacity})`,
@@ -268,16 +273,16 @@ function drawTimezones() {
 }
 
 function toggleTimezones(e) {
-    if (e == 'hide') removeZones();
-    else displayZones(useOwnTime ? ownTs : store.get('timestamp'), true);
+    log("TZ", e, getts());
+    if (e) displayZones(getts(), true); else removeZones();
 }
 
 function togglePickerTimezone(e) {
-    if (e == 'hide') removeTzPoly();
+    if (e == false) removeTzPoly();
     else if (pickerT.isOpen) {
         let pos = store.get('pickerLocation');
         let tzgj = findTzPoly(pos.lon, pos.lat);
-        let rdst = ruleAndDST(tzgj, dt.getTime());
+        let rdst = ruleAndDST(tzgj, getts());
         let absOff = abs(rdst.offset);
         showTzPoly(tzgj, absOff % 2 == 0 ? 'red' : absOff % 2 == 1 ? 'blue' : 'orange');
     }
@@ -365,8 +370,8 @@ log('suncalc', SunCalc);
 
 store.insert('day-night-opacity', { def: 0.1, allowed: v => v >= 0 && v <= 0.5, save: true });
 store.insert('day-night-utc-local', { def: 'local', allowed: ['utc', 'local'], save: true });
-store.insert('show-timezones', { def: 'hide', allowed: ['hide', 'show'], save: true });
-store.insert('show-picker-timezone', { def: 'hide', allowed: ['hide', 'show'], save: true });
+store.insert('show-timezones', { def: false, allowed: [true, false], save: true });
+store.insert('show-picker-timezone', { def: false, allowed: [true, false], save: true });
 store.insert('timezone-opacity', { def: 0.2, allowed: v => v >= 0 && v <= 1, save: true });
 
 // done in svelte
@@ -500,30 +505,38 @@ function makeUI() {
         log(setting, opts);
         if (opts.length == 0) {
             // if not opt then is checkbox,
-            setting.addEventListener('click');
-        }
-        opts.forEach(e => {
-            if (setting.dataset.ref == 'select-time') {
-                if (e.dataset.do == 'windy') e.classList.add('selected');
-            } else {
-                if (store.get(setting.dataset.ref) == e.dataset.do) e.classList.add('selected');
-            }
-
-            e.addEventListener('click', () => {
-                opts.forEach(ee => ee.classList.remove('selected'));
-                e.classList.add('selected');
-                if (setting.dataset.ref == 'select-time') {
-                    useOwnTime = e.dataset.do !== 'windy';
-                    store.set('overlay', useOwnTime ? 'topoMap' : userSelOverlay);
-                    setUseOwnTime(useOwnTime);
-                    if (useOwnTime) {
-                        onFullyearDate(ownDoty);
-                        onFullyearTime(floor(ownTime / 60000));
-                    }
-                    setTimeout(() => (refs.scrollable.scrollTop = refs.scrollable.scrollHeight), 100);
-                } else store.set(setting.dataset.ref, e.dataset.do);
+            let el = setting.firstChild;
+            el.classList[store.get(setting.dataset.ref) ? "remove" : "add"]('checkbox--off');
+            log("STORE", store.get(setting.dataset.ref));
+            setting.addEventListener('click', e => {
+                el.classList.toggle('checkbox--off');
+                store.set(setting.dataset.ref, !el.classList.contains('checkbox--off'));
+                log(setting.dataset.ref,store.get(setting.dataset.ref));
             });
-        });
+        } else {
+            opts.forEach(e => {
+                if (setting.dataset.ref == 'select-time') {
+                    if (e.dataset.do == 'windy') e.classList.add('selected');
+                } else {
+                    if (store.get(setting.dataset.ref) == e.dataset.do) e.classList.add('selected');
+                }
+
+                e.addEventListener('click', () => {
+                    opts.forEach(ee => ee.classList.remove('selected'));
+                    e.classList.add('selected');
+                    if (setting.dataset.ref == 'select-time') {
+                        useOwnTime = e.dataset.do !== 'windy';
+                        store.set('overlay', useOwnTime ? 'topoMap' : userSelOverlay);
+                        setUseOwnTime(useOwnTime);
+                        if (useOwnTime) {
+                            onFullyearDate(ownDoty);
+                            onFullyearTime(floor(ownTime / 60000));
+                        }
+                        setTimeout(() => (refs.scrollable.scrollTop = refs.scrollable.scrollHeight), 100);
+                    } else store.set(setting.dataset.ref, e.dataset.do);
+                });
+            });
+        }
     }
 
     ////toggle section visibility
@@ -576,7 +589,7 @@ function getSunTimes(e) {
     }
     if (e.lon === void 0) e.lon = e.lng; // if comes from leaflet marker
 
-    let dt = new Date(useOwnTime ? ownTs : store.get('timestamp'));
+    let dt = new Date(getts());
     let times = SunCalc.getTimes(dt, e.lat, e.lon);
 
     // function not really needed?
@@ -593,10 +606,10 @@ function getSunTimes(e) {
                     timeTds[i][k - 1].innerHTML = !(times[t[k]] instanceof Date)
                         ? times[t[k]]
                         : tz == 'utc'
-                          ? timestr()
-                          : lastTzOffs != null
-                            ? timestr(lastTzOffs)
-                            : '';
+                            ? timestr()
+                            : lastTzOffs != null
+                                ? timestr(lastTzOffs)
+                                : '';
 
                     if (t4p == i) {
                         html += `
@@ -626,7 +639,7 @@ function getSunTimes(e) {
         } = tzgj;
         let rdst = ruleAndDST(tzgj, dt.getTime());
         let { offset, rule, baseoff, ruleDescription } = rdst;
-        if (store.get('show-picker-timezone') == 'show') {
+        if (store.get('show-picker-timezone')) {
             log('tzgj', tzgj);
             log('rdst', rdst);
             let absOff = abs(offset);
@@ -644,12 +657,12 @@ function getSunTimes(e) {
             let ord = n => (n > 0 ? ['th', 'st', 'nd', 'rd'][(n > 3 && n < 21) || n % 10 > 3 ? 0 : n % 10] : '');
             return s.indexOf('>=') >= 0
                 ? (a => (
-                      (a = s.split('>=')),
-                      a[1] == 1 ? 'the 1st ' + a[0] : a[1] == 8 ? 'the 2nd ' + a[0] : 'the 1st ' + a[0] + ' from the ' + a[1] + ord(a[1])
-                  ))()
+                    (a = s.split('>=')),
+                    a[1] == 1 ? 'the 1st ' + a[0] : a[1] == 8 ? 'the 2nd ' + a[0] : 'the 1st ' + a[0] + ' from the ' + a[1] + ord(a[1])
+                ))()
                 : isNaN(s)
-                  ? 'the ' + s.replace(/([A-Z])/g, ' $1').trim()
-                  : 'the ' + s + ord(s);
+                    ? 'the ' + s.replace(/([A-Z])/g, ' $1').trim()
+                    : 'the ' + s + ord(s);
         };
 
         log(ruleDescription);

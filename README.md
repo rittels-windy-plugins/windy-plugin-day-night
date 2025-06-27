@@ -1,21 +1,38 @@
-# Demo Plugin
+# Day-Night Plugin
 
-This is a demo plugin,  provides a structure for most of my plugins:
+This plugin shows the [solar terminator lines](https://en.wikipedia.org/wiki/Terminator_(solar)) for the current timestamp. 
 
-It shows the elevation and model elevation in the picker.   
+### Select lines:
 
-To start a new plugin:
+- You can select lines for different altitudes (above or below the horizon).
 
-- copy this dir
-- set git remote:  git remote set-url xxx xxxx
-- Change the pluginConfig
-- Change all the `demo`s to this plugin name:
-    - Change the name of `demo.svelte`.   In this file,  change:  import .... `demo_main.js` and `demo.less` in the style part.
-    - Change the name of `demo-main.js`.  
-    - Change the name of `demo.less`.
-    - Change `@name  : windy-plugin-demo;` in global.less and demo.less.
-- Make the screenshot.jpg in ./src
-- Write the README.me
-- I think that is about it,  start building!!!
+### Sun Times:
 
-After pushing to repo.   Actions may not always be triggered,  then a small change must be edited to publish-plugin.yml,  like adding an empty line at then end.
+- This table displays the different times,  for instance _sunrise_ and _sunset_, for the current picker position.
+- By clicking on a line of this table,  you can select which time pair should be displayed in the picker.  
+- or you can clear the picker.
+
+### Time zone detail:
+
+- Shows the name of the time zone.
+- The current offset,  taking into account daylight saving time.
+- The daylight saving time rule,  if applicable.  
+- This is obtained from:  [iana.org/time-zones](https://www.iana.org/time-zones)
+- The timezone polygons are obtained from: [Evan Siroky's project](https://github.com/evansiroky/timezone-boundary-builder/releases)
+
+### Settngs:
+
+- You can decide whether to use the windy time,  or select the time span for the _current year_.   If you select the full year,  the windy layer will switch to _Outdoor map_.
+- Select whether to display local or UTC times in the picker.
+- Use the left or right side of the picker,  this is useful if you want to combine plugins.
+- Show shading for timezones.
+- select whether to show the timezone polygon for the picker position.
+- Set the opacity of the timezone shading.  
+
+Enjoy  T
+
+
+
+
+
+

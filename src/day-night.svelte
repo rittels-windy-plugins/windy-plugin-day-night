@@ -7,9 +7,10 @@
             showInfo(name);
             focus(); // not sure if opening the info,  should focus the picker,  but seems to make sense intuitively
         }}
-        style:cursor="pointer">Show demo plugin info</span
+        style:cursor="pointer">Day-Night Menu</span
     >
-    <span data-icon=""></span>
+    <!--plugin icon-->
+    <!--<span data-icon=""></span>-->
     <div data-ref="messageDiv" class="hidden"></div>
 </div>
 
@@ -256,5 +257,5 @@
 </script>
 
 <style lang="less">
-    @import 'day-night.less?1751011632578';
+    @import 'day-night.less?1751016055908';
 </style>

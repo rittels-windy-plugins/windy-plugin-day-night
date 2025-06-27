@@ -232,6 +232,8 @@ let displayZones = (function () {
     let prevIx = null;
     let prevFiles = [];
     return function (ts, force = false) {
+        log("DIAPLY ZONES", ts);
+        log("FORS", force);
         log('COLOR', color);
         if (!window.tz.dataLoaded) return;
         let timeIx = timelims.findIndex(t => t > ts);
@@ -242,6 +244,9 @@ let displayZones = (function () {
             //document.getElementById("index").innerHTML = timeIx;
             let polys = up.filter(u => u.epochs.includes(timeIx));
             let files = polys.map(p => p.name);
+
+            // if tzLayers was removed,  clear prevFiles;
+            if (tz.tzLayers.length == 0) prevFiles = [];
 
             // only delete layers that are not in files list and only add layers that are not in prev list.
             let files2del = prevFiles.filter(f => !files.includes(f));
