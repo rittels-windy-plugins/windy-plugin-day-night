@@ -1,8 +1,8 @@
 import type { ExternalPluginConfig } from '@windy/interfaces';
 
 const config: ExternalPluginConfig = {
-    name: 'windy-plugin-daynight',
-    version: '0.0.8',
+    name: 'windy-plugin-day-night',
+    version: '0.0.9',
     icon: '🌅',
     title: 'Day Night',
     description:

@@ -27,7 +27,6 @@
     <div class="flex-container">
         <div class="plugin__title">Day Night</div>
         <div class="scrollable" data-ref="scrollable">
-            <!--
             <div class="toggle-section checkbox open size-l" data-ref="toggleLines">Select lines</div>
             <div class="section">
                 <table id="day-night-sun-table" data-ref="dayNightSunTable"><tbody></tbody></table>
@@ -99,11 +98,9 @@
                         </tr>
                         <tr data-ref="show-timezones">
                             <td class="checkbox" style="white-space:nowrap" colspan="2">Show time zones.</td>
-                           
                         </tr>
                         <tr data-ref="show-picker-timezone">
                             <td class="checkbox" style="white-space:nowrap" colspan="2">Show tz at picker.</td>
-                            
                         </tr>
                     </tbody>
                 </table>
@@ -144,7 +141,6 @@
                     </table>
                 </div>
             </div>
-        -->
         </div>
         <Footer onFooterClick={onFooter} />
     </div>
@@ -157,7 +153,7 @@
     import store from '@windy/store';
 
     import Footer from './utils/Footer.svelte';
-    //import { init, closeCompletely } from './daynight_main.js';
+    import { init, closeCompletely } from './day-night_main.js';
     import { addDrag, showInfo, getWrapDiv, makeBottomRightHandle, makeTopLeftHandle, embedForTablet } from './utils/infoWinUtils.js';
     import { getPickerMarker } from 'custom-windy-picker';
 
@@ -173,11 +169,11 @@
     let marker;
     let useOwnTime = false;
 
-    log("plugin loaded",thisPlugin);
+    log('plugin loaded', thisPlugin);
 
     store.insert('day-night-picker-side', { def: 'right', allowed: ['left', 'right'], save: true });
 
-     log("aftr store",thisPlugin);
+    log('aftr store', thisPlugin);
     // the checkbox on the left of the embed-window allows the user to activate the picker for this plugin (focus).
     // The picker will then display info in the left or right picker divs for this plugin.
     function focus() {
@@ -214,10 +210,10 @@
         useOwnTime = uot;
     }
 
-     log("before onmount",thisPlugin);
+    log('before onmount', thisPlugin);
     onMount(() => {
-        log("Plugin mounted", thisPlugin);
-       // init(thisPlugin, setUseOwnTime);
+        log('Plugin mounted', thisPlugin);
+        init(thisPlugin, setUseOwnTime);
         node = thisPlugin.window.node;
 
         //  Info for this plugin is placed in a div appended to document.body,  get wrapDiv gets this div and creates it if needed.
@@ -241,10 +237,10 @@
         thisPlugin.focus = focus;
         thisPlugin.defocus = defocus;
 
-        log("Plugin mounted done");
+        log('Plugin mounted done');
     });
 
-     log("before destroy",thisPlugin);
+    log('before destroy', thisPlugin);
     onDestroy(() => {
         mainDiv.remove();
         document.body.classList.remove(`on${name}-info`);
@@ -254,12 +250,12 @@
         //   open() requires an object
 
         if (!closeButtonClicked) setTimeout(() => thisPlugin.open({}));
-        //else closeCompletely();
-        
+        else closeCompletely();
+
         ////
     });
 
-    log("before export");
+    log('before export');
     export const onopen = _params => {
         if (_params && 'lon' in _params && !isNaN(_params.lat) && !isNaN(_params.lon)) {
             // Important:  onopen may actually occur before onmount (race condition).   So getPickerMarker here also.
@@ -273,9 +269,9 @@
             }
         }
     };
-    log("svelte end");
+    log('svelte end');
 </script>
 
 <style lang="less">
-    @import 'daynight.less?1751036431545';
+    @import 'day-night.less?1751036977861';
 </style>
