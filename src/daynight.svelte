@@ -258,6 +258,7 @@
         ////
     });
 
+    log("before export");
     export const onopen = _params => {
         if (_params && 'lon' in _params && !isNaN(_params.lat) && !isNaN(_params.lon)) {
             // Important:  onopen may actually occur before onmount (race condition).   So getPickerMarker here also.
@@ -271,6 +272,7 @@
             }
         }
     };
+    log("svelte end");
 </script>
 
 <style lang="less">
