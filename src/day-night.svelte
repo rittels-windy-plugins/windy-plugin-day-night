@@ -75,12 +75,12 @@
             <div class="toggle-section checkbox open size-l" data-ref="toggleSettings">Settings:</div>
             <div class="section">
                 <table data-ref="dayNightSettings">
+                    <colgroup>
+                        <col style="width:30%" />
+                        <col style="width:35%" />
+                        <col style="width:35%" />
+                    </colgroup>
                     <tbody>
-                        <colgroup>
-                            <col style="width:30%" />
-                            <col style="width:35%" />
-                            <col style="width:35%" />
-                        </colgroup>
                         <tr data-ref="select-time">
                             <td>Time span:</td>
                             <td data-do="windy" class="select-setting">Windy Calendar</td>
@@ -269,5 +269,5 @@
 </script>
 
 <style lang="less">
-    @import 'day-night.less?1751018905308';
+    @import 'day-night.less?1751019079163';
 </style>
