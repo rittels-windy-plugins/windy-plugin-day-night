@@ -158,7 +158,7 @@
     import store from '@windy/store';
 
     import Footer from './utils/Footer.svelte';
-    import { init, closeCompletely } from './day-night_main.js';
+    import { init, closeCompletely } from './daynight_main.js';
     import { addDrag, showInfo, getWrapDiv, makeBottomRightHandle, makeTopLeftHandle, embedForTablet } from './utils/infoWinUtils.js';
     import { getPickerMarker } from 'custom-windy-picker';
 
@@ -178,6 +178,7 @@
 
     store.insert('day-night-picker-side', { def: 'right', allowed: ['left', 'right'], save: true });
 
+     log("aftr store",thisPlugin);
     // the checkbox on the left of the embed-window allows the user to activate the picker for this plugin (focus).
     // The picker will then display info in the left or right picker divs for this plugin.
     function focus() {
@@ -214,6 +215,7 @@
         useOwnTime = uot;
     }
 
+     log("before onmount",thisPlugin);
     onMount(() => {
         log("Plugin mounted", thisPlugin);
         init(thisPlugin, setUseOwnTime);
@@ -243,6 +245,7 @@
         log("Plugin mounted done");
     });
 
+     log("before destroy",thisPlugin);
     onDestroy(() => {
         mainDiv.remove();
         document.body.classList.remove(`on${name}-info`);
@@ -271,5 +274,5 @@
 </script>
 
 <style lang="less">
-    @import 'day-night.less?1751032073500';
+    @import 'daynight.less?1751033334083';
 </style>
