@@ -151,9 +151,7 @@
     </div>
 </div>
 
-<script lang="ts">
-    // @ts-nocheck
-
+<script>
     import { onDestroy, onMount } from 'svelte';
     import plugins from '@windy/plugins';
     import { map } from '@windy/map';
@@ -176,6 +174,8 @@
     let marker;
     let useOwnTime = false;
 
+    log("plugin mounted",thisPlugin);
+    
     store.insert('day-night-picker-side', { def: 'right', allowed: ['left', 'right'], save: true });
 
     // the checkbox on the left of the embed-window allows the user to activate the picker for this plugin (focus).
@@ -268,5 +268,5 @@
 </script>
 
 <style lang="less">
-    @import 'day-night.less?1751019384280';
+    @import 'day-night.less?1751032161572';
 </style>
