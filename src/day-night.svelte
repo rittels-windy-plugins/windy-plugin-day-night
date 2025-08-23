@@ -151,6 +151,7 @@
     import plugins from '@windy/plugins';
     import { map } from '@windy/map';
     import store from '@windy/store';
+    import { isMobileOrTablet } from '@windy/rootScope';
 
     import Footer from './utils/Footer.svelte';
     import { init, closeCompletely } from './day-night_main.js';
@@ -169,11 +170,8 @@
     let marker;
     let useOwnTime = false;
 
-  
-
     store.insert('day-night-picker-side', { def: 'right', allowed: ['left', 'right'], save: true });
 
- 
     // the checkbox on the left of the embed-window allows the user to activate the picker for this plugin (focus).
     // The picker will then display info in the left or right picker divs for this plugin.
     function focus() {
@@ -185,7 +183,6 @@
         thisPlugin.isFocused = true;
 
         let pickerSide = store.get('day-night-picker-side');
-      
 
         // The pickerCtrl module maintains a list of plugins (LIFO) which uses either the left or right divs.
         // If you plan to use the left or right div,  add the name of this plugin to the picker,  with the following function:
@@ -210,11 +207,11 @@
         useOwnTime = uot;
     }
 
-    
     onMount(() => {
-       
         init(thisPlugin, setUseOwnTime);
+
         node = thisPlugin.window.node;
+        if (isMobileOrTablet) node.style.pointerEvents = 'initial';
 
         //  Info for this plugin is placed in a div appended to document.body,  get wrapDiv gets this div and creates it if needed.
         const wrapDiv = getWrapDiv();
@@ -236,11 +233,8 @@
         focus();
         thisPlugin.focus = focus;
         thisPlugin.defocus = defocus;
-
-       
     });
 
- 
     onDestroy(() => {
         mainDiv.remove();
         document.body.classList.remove(`on${name}-info`);
@@ -255,7 +249,6 @@
         ////
     });
 
- 
     export const onopen = _params => {
         if (_params && 'lon' in _params && !isNaN(_params.lat) && !isNaN(_params.lon)) {
             // Important:  onopen may actually occur before onmount (race condition).   So getPickerMarker here also.
@@ -269,9 +262,8 @@
             }
         }
     };
- 
 </script>
 
 <style lang="less">
-    @import 'day-night.less?1751037549363';
+    @import 'day-night.less?1755941671662';
 </style>
