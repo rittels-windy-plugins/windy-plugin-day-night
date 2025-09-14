@@ -29,3 +29,9 @@ This plugin shows the [solar terminator lines](https://en.wikipedia.org/wiki/Ter
 - Show shading for timezones.
 - select whether to show the timezone polygon for the picker position.
 - Set the opacity of the timezone shading.  
+
+### Path to this plugin:
+
+[windy.com/plugin/day-night/lat/lon/time](https://www.windy.com/plugin/day-night/0/0)
+
+Time:  `yyyy-mm-ddThh:mm` or it can be any string that can be parsed by `new Date()`.  
