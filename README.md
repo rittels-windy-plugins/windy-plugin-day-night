@@ -19,6 +19,7 @@ This plugin shows the [solar terminator lines](https://en.wikipedia.org/wiki/Ter
 - The daylight saving time rule,  if applicable.  
 - This is obtained from:  [iana.org/time-zones](https://www.iana.org/time-zones)
 - The timezone polygons are obtained from: [Evan Siroky's project](https://github.com/evansiroky/timezone-boundary-builder/releases)
+- The timezone data was last updated on:  14-Sep-2025.
 
 ### Settngs:
 
@@ -28,5 +29,3 @@ This plugin shows the [solar terminator lines](https://en.wikipedia.org/wiki/Ter
 - Show shading for timezones.
 - select whether to show the timezone polygon for the picker position.
 - Set the opacity of the timezone shading.  
-
-Enjoy  

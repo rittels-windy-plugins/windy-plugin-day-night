@@ -382,6 +382,7 @@ store.insert('day-night-times-4picker', {
 });
 
 function makeUI() {
+    
     for (let togSec of node.querySelectorAll('.toggle-section')) {
         store.insert('dayNight_' + togSec.dataset.ref, {
             def: false,
@@ -482,7 +483,7 @@ function makeUI() {
     };
     refs.fullyearTime.addEventListener('input', e => onFullyearTime(Number(e.target.value)));
     refs.fullyearTime.value = floor(ownTime / 60000);
-    onFullyearTime(floor(ownTime / 60000));
+    //onFullyearTime(floor(ownTime / 60000));
 
     const onFullyearDate = v => {
         if (!useOwnTime) return;
@@ -495,7 +496,7 @@ function makeUI() {
     };
     refs.fullyearDate.addEventListener('input', e => onFullyearDate(Number(e.target.value)));
     refs.fullyearDate.value = ownDoty;
-    onFullyearDate(ownDoty);
+    //onFullyearDate(ownDoty);
 
     for (let setting of refs.dayNightSettings.rows) {
         let opts = Array.from(setting.querySelectorAll('.select-setting'));
@@ -546,6 +547,7 @@ function makeUI() {
         });
     }
 
+    log("TOGGLE ZONES");
     toggleTimezones(store.get('show-timezones'));
 }
 

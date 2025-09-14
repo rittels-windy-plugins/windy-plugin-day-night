@@ -57,7 +57,9 @@
                 </table>
             </div>
 
-            <div class="toggle-section checkbox open size-l" data-ref="toggleTz">Time zone detail:</div>
+            <div class="toggle-section checkbox open size-l" data-ref="toggleTz">
+                Time zone detail:
+            </div>
             <div data-ref="tzSection" class="section tz-section collapsed">
                 <table id="day-night-tz-detail">
                     <tbody>
@@ -156,6 +158,7 @@
     import Footer from './utils/Footer.svelte';
     import { init, closeCompletely } from './day-night_main.js';
     import { addDrag, showInfo, getWrapDiv, makeBottomRightHandle, makeTopLeftHandle, embedForTablet } from './utils/infoWinUtils.js';
+    import { getLastUpdate } from './tz/tz.js';
     import { getPickerMarker } from 'custom-windy-picker';
 
     import config from './pluginConfig.js';
@@ -169,6 +172,7 @@
     let closeButtonClicked;
     let marker;
     let useOwnTime = false;
+    let lastTzUpdate = '123';
 
     store.insert('day-night-picker-side', { def: 'right', allowed: ['left', 'right'], save: true });
 
@@ -233,6 +237,8 @@
         focus();
         thisPlugin.focus = focus;
         thisPlugin.defocus = defocus;
+
+        getLastUpdate().then(upd => (lastTzUpdate = upd));
     });
 
     onDestroy(() => {
@@ -265,5 +271,5 @@
 </script>
 
 <style lang="less">
-    @import 'day-night.less?1755941671662';
+    @import 'day-night.less?1757881759992';
 </style>

@@ -215,6 +215,7 @@ function showMsg(messageDiv, m, timeout = 30 * 1000) {
  * @param {*} messageDiv - ref to the message div
  */
 function checkVersion(messageDiv) {
+    return;
     http.get('/articles/plugins/list').then(({ data }) => {
         let pluginInList = data.find(e => e.name == config.name);
         if (!pluginInList) {

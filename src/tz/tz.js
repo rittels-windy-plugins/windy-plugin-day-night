@@ -19,7 +19,9 @@ let timelims;
  */
 let upGeojsons = {};
 
-let allPolys, rules, regions;
+let allPolys, rules, regions, lastUpdate;
+
+let loadPromise;
 
 const brotli = true;
 
@@ -32,6 +34,7 @@ const timeLimits = url + 'timeLimits';
 const polys = url + 'polys.geojson';
 const ruleList = url + 'rulelist.json';
 const regionsWithTs = url + 'regionsWithTs.json';
+const update = url + 'update.json';
 
 let map;
 let color = {
@@ -50,13 +53,12 @@ function initTzModule(importedMap) {
 
 async function loadData() {
     if (window.tz && window.tz.dataLoaded) {
-        
         ({ timelims, up, allPolys, rules, regions } = window.tz);
         return;
     }
     window.tz = {};
     tz.tzLayers = [];
-    return Promise.all([
+    loadPromise= Promise.all([
         fetch(uniquePolys)
             .then(r => {
                 return r.json();
@@ -89,11 +91,22 @@ async function loadData() {
                 rules = d;
                 tz.rules = rules;
             }),
+        fetch(update)
+            .then(r => r.json())
+            .then(d => {
+                lastUpdate = d.update;
+                log(lastUpdate)
+            }),
     ]).then(() => {
         window.tz.dataLoaded = true;
     });
+    return loadPromise;
 }
-loadData();//.then(() => log(up, timelims));
+loadData(); //.then(() => log(up, timelims));
+
+function getLastUpdate(){
+    return loadPromise.then(()=>lastUpdate);
+}
 
 function pointInPoly(ll, vs) {
     var x = ll.lon || ll.lng, //point[0],
@@ -227,13 +240,19 @@ function zoneColor(s) {
 let displayZones = (function () {
     let prevIx = null;
     let prevFiles = [];
+    let drawing = false;
     return function (ts, force = false) {
-        
+        if (drawing) {
+            log('DRAWING TZ');
+            return;
+        }
+
+        drawing = true;
         if (!window.tz.dataLoaded) return;
         let timeIx = timelims.findIndex(t => t > ts);
         if (timeIx == -1) timeIx = timelims.length - 1;
         else timeIx -= 1;
-      
+
         if (prevIx !== timeIx || force) {
             //document.getElementById("index").innerHTML = timeIx;
             let polys = up.filter(u => u.epochs.includes(timeIx));
@@ -284,10 +303,11 @@ let displayZones = (function () {
                         }).addTo(map),
                     });
                 });
+                drawing = false;
             });
             prevIx = timeIx;
         }
     };
 })();
 
-export { initTzModule, findTzPoly, showTzPoly, removeTzPoly, displayZones, removeZones, ruleAndDST, zoneOpacity };
+export { initTzModule, findTzPoly, showTzPoly, removeTzPoly, displayZones, removeZones, ruleAndDST, zoneOpacity, getLastUpdate };
