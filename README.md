@@ -21,7 +21,7 @@ This plugin shows the [solar terminator lines](https://en.wikipedia.org/wiki/Ter
 - The timezone polygons are obtained from: [Evan Siroky's project](https://github.com/evansiroky/timezone-boundary-builder/releases)
 - The timezone data was last updated on:  14-Sep-2025.
 
-### Settngs:
+### Settings:
 
 - You can decide whether to use the windy time,  or select the time span for the _current year_.   If you select the full year,  the windy layer will switch to _Outdoor map_.
 - Select whether to display local or UTC times in the picker.
