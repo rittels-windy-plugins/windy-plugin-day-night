@@ -1,6 +1,11 @@
 import SunCalc from './SunCalc.js';
+import { drawMoon } from './moon.js';
+
 import { map } from '@windy/map';
 import store from '@windy/store';
+
+const { PI, floor, abs, cos, sin, atan2, round, asin, max, min, acos } = Math;
+const { log } = console;
 
 let nightPolyNames = ['middle', 'left', 'right'];
 let maxLt = 85;
@@ -11,35 +16,38 @@ let h1 = 1000 * 60 * 60;
 
 let nightPolys = [],
     nightLines = [],
-    sunCircle;
+    sunCircle,
+    moonCircle;
 
 //////--  Main Program
 
 //// create lines and sun -- these are created when mounted the 1st time,  then added or removed from map
-function createMapLayers() {
-    SunCalc.times.forEach(() => {
+export function createMapLayers() {
+    SunCalc.times.forEach(suntime => {
+        let color = suntime[1].includes('moon') ? 'white' : 'black';
         nightLines.push({
-            middle: L.polyline([], { stroke: true, weight: 1, color: 'black', smoothFactor: 1 }),
-            left: L.polyline([], { stroke: true, weight: 1, color: 'black', smoothFactor: 1 }),
-            right: L.polyline([], { stroke: true, weight: 1, color: 'black', smoothFactor: 1 }),
+            middle: L.polyline([], { stroke: true, weight: 1, color, smoothFactor: 1 }),
+            left: L.polyline([], { stroke: true, weight: 1, color, smoothFactor: 1 }),
+            right: L.polyline([], { stroke: true, weight: 1, color, smoothFactor: 1 }),
         });
         nightPolys.push({
-            middle: L.polygon([], { stroke: false, weight: 1, color: 'black', fillOpacity: 0.08, smoothFactor: 1 }),
-            left: L.polygon([], { stroke: false, weight: 1, color: 'black', fillOpacity: 0.08, smoothFactor: 1 }),
-            right: L.polygon([], { stroke: false, weight: 1, color: 'black', fillOpacity: 0.08, smoothFactor: 1 }),
+            middle: L.polygon([], { stroke: false, weight: 1, color, fillOpacity: 0.08, smoothFactor: 1 }),
+            left: L.polygon([], { stroke: false, weight: 1, color, fillOpacity: 0.08, smoothFactor: 1 }),
+            right: L.polygon([], { stroke: false, weight: 1, color, fillOpacity: 0.08, smoothFactor: 1 }),
         });
     });
-    sunCircle = L.circle([90, 0], { radius: 12, color: 'yellow' }).addTo(map);
+    sunCircle = L.circleMarker([90, 0], { radius: 8, color: 'yellow' });
+    moonCircle = L.circleMarker([0, 0], { radius: 8, color: 'white' });
 }
-createMapLayers();
 
 function wrapLn(ln) {
     return ((ln + 360 * 3 + 180) % 360) - 180;
 }
 
-const drawLinesFxs = {
+export const drawLinesFxs = {
     removeSunLayers: function () {
         map.removeLayer(sunCircle);
+        map.removeLayer(moonCircle);
         [nightPolys, nightLines].forEach(ar =>
             ar.forEach(poly => {
                 for (let p in poly) map.removeLayer(poly[p]);
@@ -48,8 +56,15 @@ const drawLinesFxs = {
     },
 
     addSunLayers: function (k = -1) {
-        if (!map.hasLayer(sunCircle)) {
-            sunCircle.addTo(map);
+        if (!store.get('day-night-show-sun')) {
+            map.removeLayer(sunCircle);
+        } else {
+            if (!map.hasLayer(sunCircle)) sunCircle.addTo(map);
+        }
+        if (!store.get('day-night-show-moon')) {
+            map.removeLayer(moonCircle);
+        } else {
+            if (!map.hasLayer(moonCircle)) moonCircle.addTo(map);
         }
 
         [nightPolys, nightLines].forEach(times => {
@@ -67,65 +82,60 @@ const drawLinesFxs = {
 
     drawLines: function (ts) {
         let now = Date.now();
+        let noon = floor(ts / dayMs) * dayMs + dayMs / 2;
 
-        //let hreq=(ts % (dayMs)) / h1;
-
-        let noon = Math.floor(ts / dayMs) * dayMs + dayMs / 2;
-        //let lnRefs=[];
-        //let arr = [];
-        //arr = SunCalc.times.map(e => { return { selected: e[3].val, setN: [], setS: [], riseN: [], riseS: [], start: false, end: false } });
-
-        //console.log(arr);
-
-        // 1st get the coordinates gps coords for the zenith and nadir
+        // Get the coordinates gps coords for the zenith and nadir,  subSolar pos,  (subPos).
         let dt = new Date(ts);
         let noonLn = (15 * (noon - ts)) / h1; //to get close
         let solarNoon = SunCalc.getTimes(dt, 0, noonLn, 1).solarNoon;
-        noonLn += (15 * (solarNoon.getTime() - ts)) / h1;
-        solarNoon = SunCalc.getTimes(dt, 0, noonLn, 1).solarNoon;
-        noonLn += (15 * (solarNoon.getTime() - ts)) / h1;
-        let pos = SunCalc.getPosition(solarNoon, 0, noonLn);
-        let sunPos = {
-            lat: Math.abs(pos.azimuth) < Math.PI / 2 ? (pos.altitude * 180) / Math.PI - 90 : 90 - (pos.altitude * 180) / Math.PI,
-            lng: noonLn,
-        };
-        let nadirPos = {
-            lat: -sunPos.lat,
-            lng: wrapLn(noonLn + 180),
-        };
+        let sunPos = SunCalc.getPosition(solarNoon, 0, noonLn).subSolarPoint;
+        let nadirPos = { lat: -sunPos.lat, lng: wrapLn(sunPos.lng + 180) };
+        let moonPos = SunCalc.getMoonPosition(new Date(ts), 0, 0).subLunarPoint;
 
         sunCircle.setLatLng(sunPos);
+        moonCircle.setLatLng(moonPos);
 
-        let getPolygon = alt => {
+        this.sunPos = sunPos;
+        this.moonPos = moonPos;
+
+        /**
+         *
+         * @param {*} alt
+         * @param {*} sun true or false,  if moon,  false;
+         * @returns
+         */
+        let getPolygon = (alt, sun = true) => {
             //get polygon for terminator altitude
 
+            let position = sun ? nadirPos : moonPos;
+
             let pos = (lat1, lon1, b, alt) => {
-                alt *= Math.PI / 180;
-                b *= Math.PI / 180;
-                lat1 *= Math.PI / 180;
-                lon1 *= Math.PI / 180;
-                let lat2 = Math.asin(Math.sin(lat1) * Math.cos(alt) + Math.cos(lat1) * Math.sin(alt) * Math.cos(b));
-                let lon2 = lon1 + Math.atan2(Math.sin(b) * Math.sin(alt) * Math.cos(lat1), Math.cos(alt) - Math.sin(lat1) * Math.sin(lat2));
-                return [(lat2 * 180) / Math.PI, (lon2 * 180) / Math.PI];
+                alt *= PI / 180;
+                b *= PI / 180;
+                lat1 *= PI / 180;
+                lon1 *= PI / 180;
+                let lat2 = asin(sin(lat1) * cos(alt) + cos(lat1) * sin(alt) * cos(b));
+                let lon2 = lon1 + atan2(sin(b) * sin(alt) * cos(lat1), cos(alt) - sin(lat1) * sin(lat2));
+                return [(lat2 * 180) / PI, (lon2 * 180) / PI];
             };
 
             let veryNear = (ln1, ln2) => {
-                if (Math.abs(wrapLn(ln1) - wrapLn(ln2)) < 0.5) return true;
+                if (abs(wrapLn(ln1) - wrapLn(ln2)) < 0.5) return true;
             };
 
             let ar = [];
 
             for (let d = 0; d <= 360; d += degInterval) {
-                ar.push(pos(nadirPos.lat, nadirPos.lng, d, alt));
+                ar.push(pos(position.lat, position.lng, d, alt));
             }
 
-            if (!veryNear(ar[0][1], nadirPos.lng)) {
+            if (!veryNear(ar[0][1], position.lng)) {
                 ar.unshift([maxLt, ar[0][1]]);
                 ar.push([maxLt, ar[ar.length - 1][1]]);
             }
 
             let iSouth = (ar.length - 1) / 2; //index pointing south
-            if (!veryNear(ar[iSouth][1], nadirPos.lng)) {
+            if (!veryNear(ar[iSouth][1], position.lng)) {
                 ar.splice(iSouth + 1, 0, [-maxLt, ar[iSouth][1]], [-maxLt, ar[iSouth][1] - 360], [ar[iSouth][0], ar[iSouth][1] - 360]);
             }
 
@@ -140,7 +150,7 @@ const drawLinesFxs = {
             if (suntime[3].val) {
                 //sun time line selected
 
-                let line = getPolygon(suntime[0] + 90);
+                let line = getPolygon(suntime[1].includes('moon') ? 90 - suntime[0] : suntime[0] + 90, suntime[1].includes('moon') ? false : true);
 
                 //find smallest lng
                 let minLn = Infinity;
@@ -154,7 +164,7 @@ const drawLinesFxs = {
                 }
 
                 //create new line,  starting from smallest lng
-                let shift = -Math.floor((minLn + 180) / 360) * 360;
+                let shift = -floor((minLn + 180) / 360) * 360;
                 let line1 = [];
                 for (let i = mini, l = line.length; i < l + mini; i++) {
                     let ii = i % l;
@@ -166,7 +176,7 @@ const drawLinesFxs = {
                 let next = null;
                 let split = [];
                 for (let i = 1; i < line1.length; i++) {
-                    let x = Math.round(line1[i][1] / 360) - Math.round(line1[i - 1][1] / 360);
+                    let x = round(line1[i][1] / 360) - round(line1[i - 1][1] / 360);
                     if (x) split.push(i);
                 }
 
@@ -207,7 +217,7 @@ const drawLinesFxs = {
 
                 let removeExtremeLats = function (l) {
                     for (let i = l.length - 1; i >= 0; i--) {
-                        if (Math.abs(l[i][0]) == maxLt) l.splice(i, 1);
+                        if (abs(l[i][0]) == maxLt) l.splice(i, 1);
                         else if (l[i][0] == 0 && (l[i][1] + 360 * 3) % 360 == (nadirPos.lng + 180 + 360 * 3) % 360) l.splice(i, 1);
                     }
                 };
@@ -218,7 +228,6 @@ const drawLinesFxs = {
                 for (let i = polyl.length - 1; i >= 0; i--) {
                     if (polyl[i].length == 0) polyl.splice(i, 1);
                 }
-                //console.log(aa.polyl)
 
                 let shiftPoly = (line, left) => {
                     if (line[0][0][0] !== void 0) {
@@ -227,9 +236,6 @@ const drawLinesFxs = {
                         return line.map(e => [e[0], e[1] + (left ? -360 : 360)]);
                     }
                 };
-
-                //console.log("K",k);
-                //console.log(polyl);
 
                 nightPolyNames.forEach(n => {
                     //if (!map.hasLayer(nightLines[k][n])) nightLines[k][n].addTo(map); //can be added more than once in leaflet
@@ -240,15 +246,15 @@ const drawLinesFxs = {
 
                 this.addSunLayers(k);
             } else {
-                //console.log("remove",suntime,k);
                 //remove unselected lines in case still present
                 nightPolyNames.forEach(n => {
-                    //console.log(nightLines[k]);
                     map.removeLayer(nightPolys[k][n]);
                     map.removeLayer(nightLines[k][n]);
                 });
             }
         });
+
+        drawMoon(dt);
 
         //checkspeed,  optimize based on system performance
         let duration = Date.now() - now;
@@ -257,7 +263,6 @@ const drawLinesFxs = {
         } else if (duration < 10 && degInterval > 1) {
             degInterval -= 1;
         }
-        //console.log(duration, degInterval);
     },
 
     setOpacity: function (v) {
@@ -265,6 +270,12 @@ const drawLinesFxs = {
             for (let p in polys) polys[p].setStyle({ fillOpacity: v });
         });
     },
-};
 
-export default drawLinesFxs;
+    getSunPos: function () {
+        return this.sunPos;
+    },
+
+    getMoonPos: function () {
+        return this.moonPos;
+    },
+};

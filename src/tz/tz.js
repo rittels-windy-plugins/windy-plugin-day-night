@@ -58,7 +58,7 @@ async function loadData() {
     }
     window.tz = {};
     tz.tzLayers = [];
-    loadPromise= Promise.all([
+    loadPromise = Promise.all([
         fetch(uniquePolys)
             .then(r => {
                 return r.json();
@@ -95,7 +95,7 @@ async function loadData() {
             .then(r => r.json())
             .then(d => {
                 lastUpdate = d.update;
-                log(lastUpdate)
+                log(lastUpdate);
             }),
     ]).then(() => {
         window.tz.dataLoaded = true;
@@ -104,8 +104,8 @@ async function loadData() {
 }
 loadData(); //.then(() => log(up, timelims));
 
-function getLastUpdate(){
-    return loadPromise.then(()=>lastUpdate);
+function getLastUpdate() {
+    return loadPromise.then(() => lastUpdate);
 }
 
 function pointInPoly(ll, vs) {

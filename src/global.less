@@ -48,7 +48,6 @@
 
                 &.checkbox {
                     &::before {
-                        
                         content: '\u25B7';
                         top: -0.1em;
                         font-size: 13px;
@@ -202,8 +201,8 @@
 
                 &::-webkit-slider-runnable-track {
                     background-color: transparent;
-                    padding-left:2px;
-                    padding-right:2px;
+                    padding-left: 2px;
+                    padding-right: 2px;
                 }
             }
 
@@ -215,6 +214,16 @@
                 min-width: 3em;
                 overflow: hidden;
                 white-space: nowrap;
+            }
+
+            .moon-wrap {
+                display: flex;
+                gap: 15px;
+                .moon-detail {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 3px;
+                }
             }
         }
     }

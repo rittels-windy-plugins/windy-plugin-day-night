@@ -37,6 +37,10 @@
                             <td><input data-ref="customAlt" type="range" class="myrange" min="-89" max="89" /> </td>
                         </tr>
                         <tr>
+                            <td>Custom Moon:</td>
+                            <td><input data-ref="customMoonAlt" type="range" class="myrange" min="-89" max="89" /> </td>
+                        </tr>
+                        <tr>
                             <td>Opacity:</td>
                             <td><input data-ref="opacity" type="range" class="myrange" step="0.01" min="0" max="1" /> </td>
                         </tr>
@@ -44,7 +48,25 @@
                 </table>
             </div>
 
-            <div class="toggle-section checkbox open size-l" data-ref="toggleTimes">Sun Times:</div>
+            <div class="toggle-section checkbox open size-l" data-ref="toggleTimes">Sun and Moon Position:</div>
+            <div class="section">
+                <table data-ref="sunMoonSettings">
+                    <tr data-ref="day-night-show-sun">
+                        <td class="checkbox" style="white-space:nowrap" colspan="2">Show subsolar position.</td>
+                    </tr>
+                    <tr data-ref="day-night-show-moon">
+                        <td class="checkbox" style="white-space:nowrap" colspan="2">Show sublunar position.</td>
+                    </tr>
+                    <tr data-ref="day-night-show-sun-geodesic">
+                        <td class="checkbox" style="white-space:nowrap" colspan="2">Show line from picker to sun.</td>
+                    </tr>
+                    <tr data-ref="day-night-show-moon-geodesic">
+                        <td class="checkbox" style="white-space:nowrap" colspan="2">Show line from picker to moon.</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="toggle-section checkbox open size-l" data-ref="toggleTimes">Sun and Moon Times:</div>
             <div class="section">
                 <table data-ref="dayNightTimesTable">
                     <tbody>
@@ -57,9 +79,24 @@
                 </table>
             </div>
 
-            <div class="toggle-section checkbox open size-l" data-ref="toggleTz">
-                Time zone detail:
+            <div class="toggle-section checkbox open size-l" data-ref="toggleTimes">Moon:</div>
+            <div class="section">
+                <div class="moon-wrap">
+                    <svg width="75" height="75" viewBox="0 0 30 30" style="background-color:transparent">
+                        <image data-ref="moonImg" bind:this={moonImg} x="0.01" y="0.01" width="29.8" height="29.8"> </image>
+                        <path data-ref="moonTerm" fill="rgba(5,5,5)" />
+                        <!--<path data-ref="bright" stroke="white" stroke-width="0.5" d="M15 15 L15 3" />-->
+                    </svg>
+                    <div class="moon-detail">
+                        <div data-ref="waxWane">wax</div>
+                        <div data-ref="phase">phase</div>
+                        <div data-ref="fraction">Fraction</div>
+                        <div data-ref="nextFull">next full</div>
+                    </div>
+                </div>
             </div>
+
+            <div class="toggle-section checkbox open size-l" data-ref="toggleTz">Time zone detail:</div>
             <div data-ref="tzSection" class="section tz-section collapsed">
                 <table id="day-night-tz-detail">
                     <tbody>
@@ -98,10 +135,10 @@
                             <td data-do="left" class="select-setting">Left</td>
                             <td data-do="right" class="select-setting">Right</td>
                         </tr>
-                        <tr data-ref="show-timezones">
+                        <tr data-ref="day-night-show-timezones">
                             <td class="checkbox" style="white-space:nowrap" colspan="2">Show time zones.</td>
                         </tr>
-                        <tr data-ref="show-picker-timezone">
+                        <tr data-ref="day-night-show-picker-timezone">
                             <td class="checkbox" style="white-space:nowrap" colspan="2">Show tz at picker.</td>
                         </tr>
                     </tbody>
@@ -173,6 +210,7 @@
     let marker;
     let useOwnTime = false;
     let lastTzUpdate = '123';
+    let moonImg;
 
     store.insert('day-night-picker-side', { def: 'right', allowed: ['left', 'right'], save: true });
 
@@ -202,8 +240,8 @@
     }
 
     const onFooter = open => {
-        if (open) log('Footer open');
-        else log('footer closed');
+        //if (open) log('Footer open');
+        //else log('footer closed');
     };
 
     /** set by main program */
@@ -271,5 +309,5 @@
 </script>
 
 <style lang="less">
-    @import 'day-night.less?1757882379444';
+    @import 'day-night.less?1768374593354';
 </style>

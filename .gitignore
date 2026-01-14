@@ -16,3 +16,5 @@ src/no-ex.svelte
 #src/globalCss.less      #comment out when pushing to gh
 src/*.*__
 makeLinks.sh
+src/moon.html
+src/moon.png

@@ -5,24 +5,18 @@ import { emitter as picker } from '@windy/picker';
 import loc from '@windy/location';
 import * as singleclick from '@windy/singleclick';
 import { map, baseLayer } from '@windy/map';
-//import rs from '@windy/rootScope';
-//import drag from '@windy/Drag';
-//import transModule from '@windy/trans';
-//let trans = transModule.t;
-//import windyFetch from '@windy/fetch';
-
-//import { Calendar } from '@windy/Calendar';
 
 import SunCalc from './SunCalc.js';
-import linesModule from './drawLines.js'; // methods:  drawLines,  removeSunLayers,  addSunLayers draws polygons based on timestamp.  Imports SunCalc
+import { drawLinesFxs as linesModule, createMapLayers } from './drawLines.js'; // methods:  drawLines,  removeSunLayers,  addSunLayers draws polygons based on timestamp.  Imports SunCalc
 import { initTzModule, findTzPoly, showTzPoly, removeTzPoly, ruleAndDST, displayZones, removeZones, zoneOpacity } from './tz/tz.js';
+import { initMoon, drawMoon } from './moon.js';
+import * as geodesicLines from './geodesicLines.js';
 
 import config from './pluginConfig.js';
 
 import { insertGlobalCss, removeGlobalCss } from './globalCss.js';
 
 import { getPickerMarker } from 'custom-windy-picker';
-//import { checkVersion, showMsg } from './utils/infoWinUtils.js';
 
 const { log } = console;
 const { floor, abs } = Math;
@@ -34,20 +28,15 @@ let yearStart = Date.UTC(new Date().getUTCFullYear(), 0, 1);
 let ownTime = Date.now() % dayMs;
 let ownDoty = getDayOfYear(Date.now());
 let ownTs;
+let lastLatLngSrc = null;
 
 let useOwnTime = false;
-let setUseOwnTime = () => { };
+let setUseOwnTime = () => {};
 
-//let userSelParticles = store.get('particlesAnim');
-//let particlesOff4Zoom = false;
 let userSelOverlay = store.get('overlay');
 if (userSelOverlay == 'map') {
     userSelOverlay = 'wind';
 }
-
-//let playyear = false,
-//    playday = false;
-//let playInterval = null;
 
 let timeTds = [];
 let timeRows = [];
@@ -90,6 +79,8 @@ function init(plgn, setUseOwnTimeFun) {
 
     makeUI();
 
+    initMoon(refs);
+
     if (hasHooks) return;
 
     // log message -  this is to track usage of the plugin
@@ -112,36 +103,31 @@ function init(plgn, setUseOwnTimeFun) {
     picker.on('pickerMoved', collapseTz);
     picker.on('pickerClosed', clearSunTimes);
 
-    pickerT.onDrag(getSunTimes, 300);
+    pickerT.onDrag(getSunTimes, 100);
 
     drawLines();
 
-    store.on('timestamp', drawLines);
-    store.on('timestamp', getSunTimes);
-    store.on('timestamp', drawTimezones);
-    store.on('satelliteTimestamp', drawLines);
-    store.on('satelliteTimestamp', getSunTimes);
-    store.on('satelliteTimestamp', drawTimezones);
-    store.on('radarTimestamp', drawLines);
-    store.on('radarTimestamp', getSunTimes);
-    store.on('radarTimestamp', drawTimezones);
+    store.on('timestamp', onTimestamp);
+    store.on('satelliteTimestamp', onTimestamp);
+    store.on('radarTimestamp', onTimestamp);
 
     SunCalc.times.forEach(t => {
         store.on(t[3].storeName, t[3].toggle);
     });
 
-    store.on('show-timezones', toggleTimezones);
-    store.on('show-picker-timezone', togglePickerTimezone);
+    store.on('day-night-show-timezones', toggleTimezones);
+    store.on('day-night-show-picker-timezone', togglePickerTimezone);
     store.on('day-night-utc-local', getSunTimes);
     store.on('day-night-times-4picker', getSunTimes);
     store.on('day-night-picker-side', changePickerSide);
+    store.on('day-night-show-sun-geodesic', getSunTimes);
+    store.on('day-night-show-moon-geodesic', getSunTimes);
+    store.on('day-night-show-sun', drawLines);
+    store.on('day-night-show-moon', drawLines);
 
     // responsiev to sunpos plugin
     bcast.on('pluginOpened', watchForSunPosOpen);
     bcast.on('pluginClosed', watchForSunPosClosed);
-
-    //// read query and set querystring
-    //bcast.on('pluginOpened', readQuery);
 
     // This is not needed anymore,  but allows you to close this plugin completely from somewhere else
     thisPlugin.closeCompletely = closeCompletely;
@@ -166,23 +152,19 @@ const closeCompletely = function () {
     pickerT.remLeftPlugin(name);
     pickerT.remRightPlugin(name); // We are not using the right div,  not needed,  but nothing will happend if you try to remove it
 
-    //store.off('map', updateBase);
-    //store.off('overlay', setMinZoom2ExceptSat);
-    //store.off('overlay', addBarIfMap);
-    store.off('timestamp', drawLines);
-    store.off('timestamp', getSunTimes);
-    store.off('timestamp', drawTimezones);
-    store.off('satelliteTimestamp', drawLines);
-    store.off('satelliteTimestamp', getSunTimes);
-    store.off('satelliteTimestamp', drawTimezones);
-    store.off('radarTimestamp', drawLines);
-    store.off('radarTimestamp', getSunTimes);
-    store.off('radarTimestamp', drawTimezones);
-    store.off('show-timezones', toggleTimezones);
-    store.off('show-picker-timezone', togglePickerTimezone);
+    store.off('timestamp', onTimestamp);
+    store.off('satelliteTimestamp', onTimestamp);
+    store.off('radarTimestamp', onTimestamp);
+
+    store.off('day-night-show-timezones', toggleTimezones);
+    store.off('day-night-show-picker-timezone', togglePickerTimezone);
     store.off('day-night-utc-local', getSunTimes);
     store.off('day-night-times-4picker', getSunTimes);
     store.off('day-night-picker-side', changePickerSide);
+    store.off('day-night-show-sun-geodesic', getSunTimes);
+    store.off('day-night-show-moon-geodesic', getSunTimes);
+    store.off('day-night-show-sun', drawLines);
+    store.off('day-night-show-moon', drawLines);
 
     SunCalc.times.forEach(t => {
         store.off(t[3].storeName, t[3].toggle);
@@ -242,18 +224,18 @@ function capStr(s) {
 
 /** returns either windy ts or ownTs,  depending on useOwnTs, *  thus remembers ownTs,  when going back and forth between windy or useOwn*/
 function getts() {
-    return useOwnTime ? ownTs : store.get('timestamp')
+    return useOwnTime ? ownTs : store.get('timestamp');
 }
 
 function onTimestamp(ts) {
-    drawLines(ts);
-    drawTimezones(ts);
+    drawLines(ts); // drawLines 1st since this calculates the sublunar and solar pos,  required for geodeseic lines
     getSunTimes(ts);
+    drawTimezones(ts);
 }
 
 function drawLines(ts) {
     //send timestamp to drawL function
-    if (!ts) {
+    if (typeof ts !== 'number') {
         let o = store.get('overlay');
         ts = o == 'satellite' ? store.get('satelliteTimestamp') : o == 'radar' ? store.get('radarTimestamp') : store.get('timestamp');
     }
@@ -261,8 +243,8 @@ function drawLines(ts) {
 }
 
 function drawTimezones() {
-    let opacity = store.get('timezone-opacity');
-    if (store.get('show-timezones')) {
+    let opacity = store.get('day-night-timezone-opacity');
+    if (store.get('day-night-show-timezones')) {
         displayZones(getts(), true, {
             odd: `rgba(0,0,0,${opacity})`,
             even: `rgba(255,255,255,${opacity})`,
@@ -273,7 +255,8 @@ function drawTimezones() {
 }
 
 function toggleTimezones(e) {
-    if (e) displayZones(getts(), true); else removeZones();
+    if (e) displayZones(getts(), true);
+    else removeZones();
 }
 
 function togglePickerTimezone(e) {
@@ -311,10 +294,14 @@ function getDate(doty) {
     return ('00' + dt.getUTCDate()).slice(-2) + '-' + mnths[dt.getUTCMonth()];
 }
 
-////left pane UI components
+//// left pane UI components
 
 //// SunCalc.times consist of [degree, start name , end name]  ..now extend these arrays with:
 //// an object:   {storeName, val, description, toggle function}
+
+SunCalc.addTime(60, 'customRise', 'customSet');
+SunCalc.addTime(-0.133, 'moonRise', 'moonSet');
+SunCalc.addTime(20, 'moonCusRise', 'moonCusSet');
 
 /**
  * ar of times
@@ -328,6 +315,8 @@ let ar = [
     ['sun-nautical', 'Nautical dawn & dusk'],
     ['sun-night', 'Night end & start'],
     ['sun-custom', 'Custom'],
+    ['moon-rise-set', 'Moon Rise & Set'],
+    ['moon-custom', 'Moon Custom'],
 ];
 
 /**
@@ -356,7 +345,7 @@ SunCalc.times.forEach((t, i) => {
     });
 });
 
-
+createMapLayers(); //only do this now,  after times initiated
 
 store.insert('day-night-custom-altitude', {
     def: 20,
@@ -365,24 +354,35 @@ store.insert('day-night-custom-altitude', {
 });
 SunCalc.times[6][0] = store.get('day-night-custom-altitude');
 
+store.insert('day-night-custom-moon-altitude', {
+    def: 20,
+    allowed: v => v >= -90 && v <= 90,
+    save: true,
+});
+SunCalc.times[8][0] = store.get('day-night-custom-moon-altitude');
 
-store.insert('day-night-opacity', { def: 0.1, allowed: v => v >= 0 && v <= 0.5, save: true });
-store.insert('day-night-utc-local', { def: 'local', allowed: ['utc', 'local'], save: true });
-store.insert('show-timezones', { def: false, allowed: [true, false], save: true });
-store.insert('show-picker-timezone', { def: false, allowed: [true, false], save: true });
-store.insert('timezone-opacity', { def: 0.2, allowed: v => v >= 0 && v <= 1, save: true });
+// prettier-ignore
+{
+    store.insert('day-night-opacity',               { def: 0.1, allowed: v => v >= 0 && v <= 0.5,   save: true });
+    store.insert('day-night-utc-local',             { def: 'local', allowed: ['utc', 'local'],      save: true });
+    store.insert('day-night-show-timezones',        { def: false, allowed: [true, false],           save: true });
+    store.insert('day-night-show-picker-timezone',  { def: false, allowed: [true, false],           save: true });
+    store.insert('day-night-timezone-opacity',      { def: 0.2, allowed: v => v >= 0 && v <= 1,     save: true });
+    store.insert('day-night-show-sun-geodesic',     { def: true, allowed: [true, false],            save: true });
+    store.insert('day-night-show-moon-geodesic',    { def: true, allowed: [true, false],            save: true });
+    store.insert('day-night-show-sun',              { def: true, allowed: [true, false],            save: true });
+    store.insert('day-night-show-moon',             { def: true, allowed: [true, false],            save: true });
+}
 
 // done in svelte
-// store.insert('day-night-picker-side', { def: 'right', allowed: ['left', 'right'], save: true, });
 
 store.insert('day-night-times-4picker', {
     def: 2,
-    allowed: n => Number(n) >= -1 && Number(n) < 8,
+    allowed: n => Number(n) >= -1 && Number(n) < 10,
     save: true,
 });
 
 function makeUI() {
-    
     for (let togSec of node.querySelectorAll('.toggle-section')) {
         store.insert('dayNight_' + togSec.dataset.ref, {
             def: false,
@@ -407,10 +407,9 @@ function makeUI() {
 
         ////add description and degrees to table
         let alt = tr.appendChild(document.createElement('td'));
-        alt.innerHTML = t[0];
-        if (i == 6) {
-            refs.customAltVal = alt;
-        }
+        alt.innerHTML = t[0] + '&deg;';
+        if (i == 6) refs.customAltVal = alt;
+        if (i == 8) refs.customMoonAltVal = alt;
     });
 
     ////times table
@@ -449,11 +448,21 @@ function makeUI() {
         let v = Number(e.target.value);
         store.set('day-night-custom-altitude', v);
         SunCalc.times[6][0] = v;
-        refs.customAltVal.innerHTML = v;
+        refs.customAltVal.innerHTML = v + '&deg;';
         drawLines();
         getSunTimes();
     });
     refs.customAlt.value = Number(store.get('day-night-custom-altitude'));
+
+    refs.customMoonAlt.addEventListener('input', e => {
+        let v = Number(e.target.value);
+        store.set('day-night-custom-moon-altitude', v);
+        SunCalc.times[8][0] = v;
+        refs.customMoonAltVal.innerHTML = v + '&deg;';
+        drawLines();
+        getSunTimes();
+    });
+    refs.customMoonAlt.value = Number(store.get('day-night-custom-moon-altitude'));
 
     refs.opacity.addEventListener('input', e => {
         let v = Number(e.target.value);
@@ -468,7 +477,7 @@ function makeUI() {
         store.set('timezone-opacity', v);
         zoneOpacity(v);
     });
-    let znOp = Number(store.get('timezone-opacity'));
+    let znOp = Number(store.get('day-night-timezone-opacity'));
     refs.tzOpacity.value = Math.pow(znOp, 0.5);
     zoneOpacity(znOp);
 
@@ -498,18 +507,17 @@ function makeUI() {
     refs.fullyearDate.value = ownDoty;
     //onFullyearDate(ownDoty);
 
-    for (let setting of refs.dayNightSettings.rows) {
+    const initSetting = setting => {
         let opts = Array.from(setting.querySelectorAll('.select-setting'));
-        
+
         if (opts.length == 0) {
             // if not opt then is checkbox,
             let el = setting.firstChild;
-            el.classList[store.get(setting.dataset.ref) ? "remove" : "add"]('checkbox--off');
-            
+            el.classList[store.get(setting.dataset.ref) ? 'remove' : 'add']('checkbox--off');
+
             setting.addEventListener('click', e => {
                 el.classList.toggle('checkbox--off');
                 store.set(setting.dataset.ref, !el.classList.contains('checkbox--off'));
-                
             });
         } else {
             opts.forEach(e => {
@@ -535,7 +543,9 @@ function makeUI() {
                 });
             });
         }
-    }
+    };
+    for (let setting of refs.dayNightSettings.rows) initSetting(setting);
+    for (let setting of refs.sunMoonSettings.rows) initSetting(setting);
 
     ////toggle section visibility
 
@@ -546,9 +556,7 @@ function makeUI() {
             store.set('dayNight_' + togSec.dataset.ref, togSec.classList.contains('off'));
         });
     }
-
-    log("TOGGLE ZONES");
-    toggleTimezones(store.get('show-timezones'));
+    toggleTimezones(store.get('day-night-show-timezones'));
 }
 
 function setURL(p, ts) {
@@ -577,6 +585,9 @@ let tzRefs = ['tzName', 'tzOffset', 'tzOffsetDST', 'tzRule', 'tzBeg', 'tzEnd'];
  * gets tz detail and fills table and draws poly
  */
 function getSunTimes(e) {
+    
+    if (e.source) lastLatLngSrc = e.source;
+
     let { tzSection, tzName, tzOffset, tzOffsetDST, tzRule, tzBeg, tzEnd } = refs;
 
     if (e === void 0 || e.lat === void 0) {
@@ -591,46 +602,7 @@ function getSunTimes(e) {
     let dt = new Date(getts());
     let times = SunCalc.getTimes(dt, e.lat, e.lon);
 
-    // function not really needed?
-    let fillTableAndPicker = function () {
-        let html = '',
-            t4p = store.get('day-night-times-4picker'),
-            tz = store.get('day-night-utc-local');
-        SunCalc.times.forEach((t, i) => {
-            [1, 2].forEach(k => {
-                if (times[t[k]]) {
-                    const timestr = offs =>
-                        (offs ? new Date(times[t[k]].getTime() + offs * h1) : times[t[k]]).toISOString().slice(11, 16) + (offs ? '' : 'z');
-
-                    timeTds[i][k - 1].innerHTML = !(times[t[k]] instanceof Date)
-                        ? times[t[k]]
-                        : tz == 'utc'
-                            ? timestr()
-                            : lastTzOffs != null
-                                ? timestr(lastTzOffs)
-                                : '';
-
-                    if (t4p == i) {
-                        html += `
-                            ${capStr(t[k])}: ${!(times[t[k]] instanceof Date) ? times[t[k]] : timestr()}
-                            ${!(times[t[k]] instanceof Date) ? '' : lastTzOffs ? ', ' + timestr(lastTzOffs) : ''}
-                            ${k == 1 ? '<br>' : ''}`;
-                    }
-                }
-            });
-        });
-        //if (pickerT.isOpen) {  //no really needed,  wont happen if closed
-        if (store.get('day-night-picker-side') == 'right') {
-            if (pickerT.getRightPlugin() == name) pickerT.fillRightDiv(html);
-        } else {
-            if (pickerT.getLeftPlugin() == name) pickerT.fillLeftDiv(html, true);
-        }
-        //}
-    };
-
-    fillTableAndPicker();
-
-    // now tzs
+    // Timezones 1st,  to obtain tz offset which is required for local times in picker and table.
     if (lastlon === null || abs(lastlon - e.lon) > 0.1 || abs(lastlat - e.lat) > 0.1 || abs(lastTs - dt.getTime()) > h1) {
         let tzgj = findTzPoly(e.lon, e.lat);
         let {
@@ -638,13 +610,13 @@ function getSunTimes(e) {
         } = tzgj;
         let rdst = ruleAndDST(tzgj, dt.getTime());
         let { offset, rule, baseoff, ruleDescription } = rdst;
-        if (store.get('show-picker-timezone')) {
+        if (store.get('day-night-show-picker-timezone')) {
             let absOff = abs(offset);
             showTzPoly(tzgj, absOff % 2 == 0 ? 'red' : absOff % 2 == 1 ? 'blue' : 'orange');
         }
 
         lastTzOffs = offset;
-        (lastlon = e.lon), (lastlat = e.lat);
+        ((lastlon = e.lon), (lastlat = e.lat));
         lastTs = dt.getTime();
         tzName.innerHTML = tzid;
         tzOffset.innerHTML = (baseoff > 0 ? '+' : '') + baseoff;
@@ -654,15 +626,14 @@ function getSunTimes(e) {
             let ord = n => (n > 0 ? ['th', 'st', 'nd', 'rd'][(n > 3 && n < 21) || n % 10 > 3 ? 0 : n % 10] : '');
             return s.indexOf('>=') >= 0
                 ? (a => (
-                    (a = s.split('>=')),
-                    a[1] == 1 ? 'the 1st ' + a[0] : a[1] == 8 ? 'the 2nd ' + a[0] : 'the 1st ' + a[0] + ' from the ' + a[1] + ord(a[1])
-                ))()
+                      (a = s.split('>=')),
+                      a[1] == 1 ? 'the 1st ' + a[0] : a[1] == 8 ? 'the 2nd ' + a[0] : 'the 1st ' + a[0] + ' from the ' + a[1] + ord(a[1])
+                  ))()
                 : isNaN(s)
-                    ? 'the ' + s.replace(/([A-Z])/g, ' $1').trim()
-                    : 'the ' + s + ord(s);
+                  ? 'the ' + s.replace(/([A-Z])/g, ' $1').trim()
+                  : 'the ' + s + ord(s);
         };
 
-     
         if (ruleDescription) {
             tzSection.classList.remove('collapsed', 'hide-rows');
             ruleExists = true;
@@ -686,7 +657,56 @@ function getSunTimes(e) {
             tzSection.classList.add('hide-rows');
         }
     }
+
+    // Fill the picker and the table
+    let html = '',
+        t4p = store.get('day-night-times-4picker'),
+        tz = store.get('day-night-utc-local');
+
+    SunCalc.times.forEach((t, i) => {
+        [1, 2].forEach(k => {
+            if (times[t[k]]) {
+                const timestr = offs =>
+                    (offs ? new Date(times[t[k]].getTime() + offs * h1) : times[t[k]]).toISOString().slice(11, 16) + (offs ? '' : 'z');
+
+                timeTds[i][k - 1].innerHTML = !(times[t[k]] instanceof Date)
+                    ? times[t[k]]
+                    : tz == 'utc'
+                      ? timestr()
+                      : lastTzOffs != null
+                        ? timestr(lastTzOffs)
+                        : '';
+
+                if (t4p == i) {
+                    html += `
+                            ${capStr(t[k])}: ${!(times[t[k]] instanceof Date) ? times[t[k]] : timestr()}
+                            ${!(times[t[k]] instanceof Date) ? '' : lastTzOffs ? ', ' + timestr(lastTzOffs) : ''}
+                            ${k == 1 ? '<br>' : ''}`;
+                }
+            }
+        });
+        if (t4p == i && t4p > 6) {
+            // if I want to put the moon in picker
+        }
+    });
+    //if (pickerT.isOpen) {  //no really needed,  wont happen if closed
+    if (store.get('day-night-picker-side') == 'right') {
+        if (pickerT.getRightPlugin() == name) pickerT.fillRightDiv(html);
+    } else {
+        if (pickerT.getLeftPlugin() == name) pickerT.fillLeftDiv(html, true);
+    }
+
+    // set the URL
     setURL(e, store.get('timestamp'));
+
+    // moon
+    drawMoon(dt, e.lat, e.lon);
+
+    //geodesic Lines
+    if (store.get('day-night-show-sun-geodesic')) geodesicLines.drawLine('sun', e, linesModule.getSunPos());
+    else geodesicLines.removeLines('sun');
+    if (store.get('day-night-show-moon-geodesic')) geodesicLines.drawLine('moon', e, linesModule.getMoonPos());
+    else geodesicLines.removeLines('moon');
 }
 
 function collapseTz() {
@@ -695,39 +715,51 @@ function collapseTz() {
     }
 }
 
-function clearSunTimes() {
-    SunCalc.times.forEach((t, i) => [0, 1].forEach(k => (timeTds[i][k].innerHTML = '')));
-    ruleExists = false;
-    tzRefs.forEach(e => (refs[e].innerHTML = ''));
-    collapseTz();
-    removeTzPoly();
+function clearSunTimes(e) {
+    if (!e || e.source == lastLatLngSrc) {
+        SunCalc.times.forEach((t, i) => [0, 1].forEach(k => (timeTds[i][k].innerHTML = '')));
+        ruleExists = false;
+        tzRefs.forEach(e => (refs[e].innerHTML = ''));
+        collapseTz();
+        removeTzPoly();
+        geodesicLines.removeLines();
+        drawMoon(new Date(getts())); // draw moon for your current position
+    }
 }
 
 ///// extra work wiht sun position plugin
 
 let sunPosMarker;
 
+function getSunTimesFromSunPos(e) {
+    let pos = e.latlng || e._latlng;
+    pos.source = 'sun-moon';
+    getSunTimes(pos);
+}
 function watchForSunPosOpen(e) {
-    if (e == 'windy-plugin-sun-position') {
+    if (e == 'sun-moon') {
         pickerT.removeMarker(); // close my picker
+
         map.eachLayer(layer => {
-            if (layer.options?.icon?.options?.className == 'dial') {
-               
+            if (layer.options && layer.options.icon && layer.options.icon && layer.options.icon.options.className == 'icon-dot') {
                 sunPosMarker = layer;
-                sunPosMarker.on('drag', e => getSunTimes(e.latlng));
-                sunPosMarker.on('move', e => getSunTimes(e.latlng));
+                sunPosMarker.on('drag', getSunTimesFromSunPos);
+                sunPosMarker.on('move', getSunTimesFromSunPos);
+                if (layer._latlng) {
+                    getSunTimesFromSunPos(layer);
+                }
             }
         });
     }
 }
 
 function watchForSunPosClosed(e) {
-    if (e == 'windy-plugin-sun-position') {
+    if (e == 'sun-moon') {
         if (sunPosMarker) {
             // prob not needed
             sunPosMarker.off('drag');
             sunPosMarker.off('move');
         }
-        removeTzPoly();
+        clearSunTimes({ source: e });
     }
 }

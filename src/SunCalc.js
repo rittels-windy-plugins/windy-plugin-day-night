@@ -90,6 +90,12 @@ function sunCoords(d) {
     };
 }
 
+// my extra functions:
+
+function wrapLng(lng) {
+    return ((((lng + 180) % 360) + 360) % 360) - 180;
+}
+
 var SunCalc = {};
 
 // calculates sun position for a given date and latitude/longitude
@@ -101,9 +107,15 @@ SunCalc.getPosition = function (date, lat, lng) {
         c = sunCoords(d),
         H = siderealTime(d, lw) - c.ra;
 
+    let gmst = siderealTime(d, 0);
+
     return {
         azimuth: azimuth(H, phi, c.dec),
         altitude: altitude(H, phi, c.dec),
+        subSolarPoint: {
+            lat: c.dec / rad,
+            lng: wrapLng((c.ra - gmst) / rad),
+        },
     };
 };
 
@@ -116,7 +128,6 @@ var times = (SunCalc.times = [
     [-6, 'dawn', 'dusk'],
     [-12, 'nauticalDawn', 'nauticalDusk'],
     [-18, 'nightEnd', 'night'],
-    [60, 'customRise', 'customSet'],
 ]);
 
 // adds a custom time to the times config
@@ -182,8 +193,6 @@ SunCalc.getTimes = function (date, lat, lng, onlyNoon, height) {
         Jset,
         Jrise;
 
-    //console.log("Jnoon",Jnoon);
-
     var result = {
         solarNoon: fromJulian(Jnoon),
         nadir: fromJulian(Jnoon - 0.5),
@@ -192,6 +201,16 @@ SunCalc.getTimes = function (date, lat, lng, onlyNoon, height) {
     if (onlyNoon) return result;
 
     for (i = 0, len = times.length; i < len; i += 1) {
+        // check if moon times included,  and get their positions
+        if (times[i][1].includes('moon')) {
+            let moontimes = SunCalc.getMoonTimes(date, lat, lng, false, times[i][0]);
+            result[times[i][1]] = moontimes.rise;
+            result[times[i][2]] = moontimes.set;
+            if (moontimes.alwaysUp) result[times[i][1]] = result[times[i][2]] = 'never down';
+            if (moontimes.alwaysDown) result[times[i][1]] = result[times[i][2]] = 'never up';
+            continue;
+        }
+
         if (times[i][3]) {
             time = times[i];
             h0 = (time[0] + dh) * rad;
@@ -242,11 +261,19 @@ SunCalc.getMoonPosition = function (date, lat, lng) {
 
     h = h + astroRefraction(h); // altitude correction for refraction
 
+    let gmst = siderealTime(d, 0);
+
     return {
         azimuth: azimuth(H, phi, c.dec),
         altitude: h,
         distance: c.dist,
         parallacticAngle: pa,
+        dec: c.dec,
+        ra: c.ra,
+        subLunarPoint: {
+            lat: c.dec / rad,
+            lng: wrapLng((c.ra - gmst) / rad),
+        },
     };
 };
 
@@ -276,12 +303,12 @@ function hoursLater(date, h) {
 
 // calculations for moon rise/set times are based on http://www.stargazing.net/kepler/moonrise.html article
 
-SunCalc.getMoonTimes = function (date, lat, lng, inUTC) {
+SunCalc.getMoonTimes = function (date, lat, lng, inUTC, aboveHor) {
     var t = new Date(date);
     if (inUTC) t.setUTCHours(0, 0, 0, 0);
     else t.setHours(0, 0, 0, 0);
 
-    var hc = 0.133 * rad,
+    var hc = (aboveHor !== undefined ? -aboveHor : 0.133) * rad,
         h0 = SunCalc.getMoonPosition(t, lat, lng).altitude - hc,
         h1,
         h2,

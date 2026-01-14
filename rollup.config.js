@@ -2,6 +2,7 @@ import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import typescript from '@rollup/plugin-typescript';
 import terser from '@rollup/plugin-terser';
+import url from '@rollup/plugin-url';
 
 import serve from 'rollup-plugin-serve';
 import rollupSvelte from 'rollup-plugin-svelte';
@@ -16,7 +17,7 @@ import watchGlobs from 'rollup-plugin-watch-globs';
 
 import { makeGlobalCss } from './globalCss.js';
 
-import {rebuildOnLessChange} from './rebuildOnLessChange.js';
+import { rebuildOnLessChange } from './rebuildOnLessChange.js';
 
 import { transformCodeToESMPlugin, keyPEM, certificatePEM } from '@windycom/plugin-devtools';
 
@@ -104,18 +105,22 @@ export default {
         commonjs(),
         transformCodeToESMPlugin(),
         process.env.SERVE !== 'false' &&
-            serve({
-                contentBase: 'dist',
-                host: '0.0.0.0',
-                port,
-                headers: {
-                    'Access-Control-Allow-Origin': '*',
-                },
-                https: {
-                    key: keyPEM,
-                    cert: certificatePEM,
-                },
-            }),
+        serve({
+            contentBase: 'dist',
+            host: '0.0.0.0',
+            port,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+            },
+            https: {
+                key: keyPEM,
+                cert: certificatePEM,
+            },
+        }),
+        url({
+            include: ['**/*.png', '**/*.jpg', '**/*.svg'],
+            limit: Infinity
+        })
     ],
 };
 
