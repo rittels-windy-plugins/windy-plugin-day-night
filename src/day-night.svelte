@@ -252,7 +252,8 @@
     onMount(() => {
         init(thisPlugin, setUseOwnTime);
 
-        node = thisPlugin.window.node;
+        node = document.getElementById('plugin-' + thisPlugin.ident);
+
         if (isMobileOrTablet) node.style.pointerEvents = 'initial';
 
         //  Info for this plugin is placed in a div appended to document.body,  get wrapDiv gets this div and creates it if needed.
@@ -309,5 +310,5 @@
 </script>
 
 <style lang="less">
-    @import 'day-night.less?1768374593354';
+    @import 'day-night.less?1769290356258';
 </style>

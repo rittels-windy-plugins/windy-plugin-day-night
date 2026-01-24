@@ -64,8 +64,8 @@ initTzModule(map);
 function init(plgn, setUseOwnTimeFun) {
     thisPlugin = plgn;
     setUseOwnTime = setUseOwnTimeFun;
-
-    ({ node } = plgn.window);
+    
+    node = $('#plugin-' + plgn.ident);
     ({ refs } = getRefs(node));
 
     // important to close the windy picker
@@ -103,7 +103,7 @@ function init(plgn, setUseOwnTimeFun) {
     picker.on('pickerMoved', collapseTz);
     picker.on('pickerClosed', clearSunTimes);
 
-    pickerT.onDrag(getSunTimes, 100);
+    pickerT.onDrag(getSunTimes, 50);
 
     drawLines();
 
@@ -189,6 +189,7 @@ const closeCompletely = function () {
     linesModule.removeSunLayers();
     removeZones();
     removeTzPoly();
+    geodesicLines.removeLines();
 
     // other plugins will try to defocus this plugin,  if these functions are still present
     delete thisPlugin.focus;
@@ -585,7 +586,6 @@ let tzRefs = ['tzName', 'tzOffset', 'tzOffsetDST', 'tzRule', 'tzBeg', 'tzEnd'];
  * gets tz detail and fills table and draws poly
  */
 function getSunTimes(e) {
-    
     if (e.source) lastLatLngSrc = e.source;
 
     let { tzSection, tzName, tzOffset, tzOffsetDST, tzRule, tzBeg, tzEnd } = refs;
