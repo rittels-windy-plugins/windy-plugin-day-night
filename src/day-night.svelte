@@ -312,5 +312,5 @@
 </script>
 
 <style lang="less">
-    @import 'day-night.less?1769499520600';
+    @import 'day-night.less?1769499775368';
 </style>

@@ -587,9 +587,9 @@ let tzRefs = ['tzName', 'tzOffset', 'tzOffsetDST', 'tzRule', 'tzBeg', 'tzEnd'];
  */
 function getSunTimes(e) {
     // if e is object with {lat}  it must be from "sun-moon" or "custom-picker",  else ignore:
-    if (e.lat !== undefined && e.source !== 'custom-picker' && e.source !== 'sun-moon') return; // for now ignore the mobile picker
+    if (e && e.lat !== undefined && e.source !== 'custom-picker' && e.source !== 'sun-moon') return; // for now ignore the mobile picker
 
-    if (e.source) lastLatLngSrc = e.source;
+    if (e && e.source) lastLatLngSrc = e.source;
 
     let { tzSection, tzName, tzOffset, tzOffsetDST, tzRule, tzBeg, tzEnd } = refs;
 
