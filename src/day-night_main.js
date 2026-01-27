@@ -64,7 +64,7 @@ initTzModule(map);
 function init(plgn, setUseOwnTimeFun) {
     thisPlugin = plgn;
     setUseOwnTime = setUseOwnTimeFun;
-    
+
     node = $('#plugin-' + plgn.ident);
     ({ refs } = getRefs(node));
 
@@ -101,7 +101,7 @@ function init(plgn, setUseOwnTimeFun) {
     picker.on('pickerOpened', getSunTimes);
     picker.on('pickerMoved', getSunTimes);
     picker.on('pickerMoved', collapseTz);
-    picker.on('pickerClosed', clearSunTimes);
+    picker.on('pickerClosed', clearSunTimesOnPickerClose);
 
     pickerT.onDrag(getSunTimes, 50);
 
@@ -146,7 +146,7 @@ const closeCompletely = function () {
     picker.off('pickerMoved', getSunTimes);
     picker.off('pickerOpened', getSunTimes);
     picker.off('pickerMoved', collapseTz);
-    picker.off('pickerClosed', clearSunTimes);
+    picker.off('pickerClosed', clearSunTimesOnPickerClose);
 
     pickerT.offDrag(getSunTimes);
     pickerT.remLeftPlugin(name);
@@ -230,7 +230,7 @@ function getts() {
 
 function onTimestamp(ts) {
     drawLines(ts); // drawLines 1st since this calculates the sublunar and solar pos,  required for geodeseic lines
-    getSunTimes(ts);
+    getSunTimes();
     drawTimezones(ts);
 }
 
@@ -586,6 +586,9 @@ let tzRefs = ['tzName', 'tzOffset', 'tzOffsetDST', 'tzRule', 'tzBeg', 'tzEnd'];
  * gets tz detail and fills table and draws poly
  */
 function getSunTimes(e) {
+    // if e is object with {lat}  it must be from "sun-moon" or "custom-picker",  else ignore:
+    if (e.lat !== undefined && e.source !== 'custom-picker' && e.source !== 'sun-moon') return; // for now ignore the mobile picker
+
     if (e.source) lastLatLngSrc = e.source;
 
     let { tzSection, tzName, tzOffset, tzOffsetDST, tzRule, tzBeg, tzEnd } = refs;
@@ -605,56 +608,59 @@ function getSunTimes(e) {
     // Timezones 1st,  to obtain tz offset which is required for local times in picker and table.
     if (lastlon === null || abs(lastlon - e.lon) > 0.1 || abs(lastlat - e.lat) > 0.1 || abs(lastTs - dt.getTime()) > h1) {
         let tzgj = findTzPoly(e.lon, e.lat);
-        let {
-            properties: { tzid },
-        } = tzgj;
-        let rdst = ruleAndDST(tzgj, dt.getTime());
-        let { offset, rule, baseoff, ruleDescription } = rdst;
-        if (store.get('day-night-show-picker-timezone')) {
-            let absOff = abs(offset);
-            showTzPoly(tzgj, absOff % 2 == 0 ? 'red' : absOff % 2 == 1 ? 'blue' : 'orange');
-        }
-
-        lastTzOffs = offset;
-        ((lastlon = e.lon), (lastlat = e.lat));
-        lastTs = dt.getTime();
-        tzName.innerHTML = tzid;
-        tzOffset.innerHTML = (baseoff > 0 ? '+' : '') + baseoff;
-        tzOffsetDST.innerHTML = (offset > 0 ? '+' : '') + offset;
-
-        let dayStr = s => {
-            let ord = n => (n > 0 ? ['th', 'st', 'nd', 'rd'][(n > 3 && n < 21) || n % 10 > 3 ? 0 : n % 10] : '');
-            return s.indexOf('>=') >= 0
-                ? (a => (
-                      (a = s.split('>=')),
-                      a[1] == 1 ? 'the 1st ' + a[0] : a[1] == 8 ? 'the 2nd ' + a[0] : 'the 1st ' + a[0] + ' from the ' + a[1] + ord(a[1])
-                  ))()
-                : isNaN(s)
-                  ? 'the ' + s.replace(/([A-Z])/g, ' $1').trim()
-                  : 'the ' + s + ord(s);
-        };
-
-        if (ruleDescription) {
-            tzSection.classList.remove('collapsed', 'hide-rows');
-            ruleExists = true;
-            let s = ruleDescription.beg.save,
-                b = 'beg',
-                e = 'end';
-            if (s == 0) {
-                s = ruleDescription.end.save;
-                b = 'end';
-                e = 'beg';
+        if (tzgj && tzgj.properties) {
+            //otherwise data not yet loaded or could not look up
+            let {
+                properties: { tzid },
+            } = tzgj;
+            let rdst = ruleAndDST(tzgj, dt.getTime());
+            let { offset, rule, baseoff, ruleDescription } = rdst;
+            if (store.get('day-night-show-picker-timezone')) {
+                let absOff = abs(offset);
+                showTzPoly(tzgj, absOff % 2 == 0 ? 'red' : absOff % 2 == 1 ? 'blue' : 'orange');
             }
-            tzRule.innerHTML = `${rule}: Save: ${s}`;
-            tzBeg.innerHTML = `At ${ruleDescription[b].at} on ${dayStr(ruleDescription[b].day)} of ${ruleDescription[b].month}`;
-            tzEnd.innerHTML = `At ${ruleDescription[e].at} on ${dayStr(ruleDescription[e].day)} of ${ruleDescription[e].month}`;
-            [tzBeg, tzEnd].forEach((t, i, a) => {
-                t.classList[a[i].innerHTML.length > 33 || a[1 - i].innerHTML.length > 33 ? 'add' : 'remove']('small');
-            });
-        } else {
-            ruleExists = false;
-            tzRule.innerHTML = 'No daylight saving time';
-            tzSection.classList.add('hide-rows');
+
+            lastTzOffs = offset;
+            ((lastlon = e.lon), (lastlat = e.lat));
+            lastTs = dt.getTime();
+            tzName.innerHTML = tzid;
+            tzOffset.innerHTML = (baseoff > 0 ? '+' : '') + baseoff;
+            tzOffsetDST.innerHTML = (offset > 0 ? '+' : '') + offset;
+
+            let dayStr = s => {
+                let ord = n => (n > 0 ? ['th', 'st', 'nd', 'rd'][(n > 3 && n < 21) || n % 10 > 3 ? 0 : n % 10] : '');
+                return s.indexOf('>=') >= 0
+                    ? (a => (
+                          (a = s.split('>=')),
+                          a[1] == 1 ? 'the 1st ' + a[0] : a[1] == 8 ? 'the 2nd ' + a[0] : 'the 1st ' + a[0] + ' from the ' + a[1] + ord(a[1])
+                      ))()
+                    : isNaN(s)
+                      ? 'the ' + s.replace(/([A-Z])/g, ' $1').trim()
+                      : 'the ' + s + ord(s);
+            };
+
+            if (ruleDescription) {
+                tzSection.classList.remove('collapsed', 'hide-rows');
+                ruleExists = true;
+                let s = ruleDescription.beg.save,
+                    b = 'beg',
+                    e = 'end';
+                if (s == 0) {
+                    s = ruleDescription.end.save;
+                    b = 'end';
+                    e = 'beg';
+                }
+                tzRule.innerHTML = `${rule}: Save: ${s}`;
+                tzBeg.innerHTML = `At ${ruleDescription[b].at} on ${dayStr(ruleDescription[b].day)} of ${ruleDescription[b].month}`;
+                tzEnd.innerHTML = `At ${ruleDescription[e].at} on ${dayStr(ruleDescription[e].day)} of ${ruleDescription[e].month}`;
+                [tzBeg, tzEnd].forEach((t, i, a) => {
+                    t.classList[a[i].innerHTML.length > 33 || a[1 - i].innerHTML.length > 33 ? 'add' : 'remove']('small');
+                });
+            } else {
+                ruleExists = false;
+                tzRule.innerHTML = 'No daylight saving time';
+                tzSection.classList.add('hide-rows');
+            }
         }
     }
 
@@ -715,16 +721,19 @@ function collapseTz() {
     }
 }
 
+function clearSunTimesOnPickerClose(e) {
+    if (e == undefined || e == 'picker') return; // this is windy mobile picker,  dont clear,  only clear when my picker closes
+    if (lastLatLngSrc == 'custom-picker') clearSunTimes(); //dont clear if sun-moon is using it.
+}
+
 function clearSunTimes(e) {
-    if (!e || e.source == lastLatLngSrc) {
-        SunCalc.times.forEach((t, i) => [0, 1].forEach(k => (timeTds[i][k].innerHTML = '')));
-        ruleExists = false;
-        tzRefs.forEach(e => (refs[e].innerHTML = ''));
-        collapseTz();
-        removeTzPoly();
-        geodesicLines.removeLines();
-        drawMoon(new Date(getts())); // draw moon for your current position
-    }
+    SunCalc.times.forEach((t, i) => [0, 1].forEach(k => (timeTds[i][k].innerHTML = '')));
+    ruleExists = false;
+    tzRefs.forEach(e => (refs[e].innerHTML = ''));
+    collapseTz();
+    removeTzPoly();
+    geodesicLines.removeLines();
+    drawMoon(new Date(getts())); // draw moon for your current position
 }
 
 ///// extra work wiht sun position plugin
@@ -732,13 +741,15 @@ function clearSunTimes(e) {
 let sunPosMarker;
 
 function getSunTimesFromSunPos(e) {
+    //can come from either opening or moving,   and add source.
     let pos = e.latlng || e._latlng;
     pos.source = 'sun-moon';
     getSunTimes(pos);
 }
+
 function watchForSunPosOpen(e) {
     if (e == 'sun-moon') {
-        pickerT.removeMarker(); // close my picker
+        //pickerT.removeMarker(); // close my picker
 
         map.eachLayer(layer => {
             if (layer.options && layer.options.icon && layer.options.icon && layer.options.icon.options.className == 'icon-dot') {
@@ -760,6 +771,6 @@ function watchForSunPosClosed(e) {
             sunPosMarker.off('drag');
             sunPosMarker.off('move');
         }
-        clearSunTimes({ source: e });
+        if (lastLatLngSrc == 'sun-moon') clearSunTimes();
     }
 }

@@ -298,6 +298,8 @@
         if (_params && 'lon' in _params && !isNaN(_params.lat) && !isNaN(_params.lon)) {
             // Important:  onopen may actually occur before onmount (race condition).   So getPickerMarker here also.
             marker = getPickerMarker();
+            _params.lat = +_params.lat;
+            _params.lon = +_params.lon;
             marker.openMarker(_params);
             map.setView(_params);
 
@@ -310,5 +312,5 @@
 </script>
 
 <style lang="less">
-    @import 'day-night.less?1769290356258';
+    @import 'day-night.less?1769499520600';
 </style>

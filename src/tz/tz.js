@@ -135,7 +135,7 @@ function removeTzPoly() {
 }
 
 function findTzPoly(lon, lat) {
-    if (!window.tz.dataLoaded) return;
+    if (!window.tz.dataLoaded) return "tz data not loaded";
     let possibles = [];
     let found = allPolys.features.filter(
         ({

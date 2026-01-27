@@ -45,6 +45,7 @@ function drawLine(body, p1, p2) {
 }
 
 function removeLines(body) {
+    log("REMOVE LINES", body)
     if (body === undefined || body === 'sun') map.removeLayer(sunLine);
     if (body === undefined || body === 'moon') map.removeLayer(moonLine);
 }
