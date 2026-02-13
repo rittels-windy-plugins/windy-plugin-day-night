@@ -26,9 +26,9 @@
     },
     "homepage": "https://docs.windy-plugins.com/",
     "dependencies": {
-        "@windycom/plugin-devtools":"^3.0.0",
+        "@windycom/plugin-devtools":"3.0.0",
         "@rollup/plugin-url":"8.0.2",
-        "custom-windy-picker":"^1.0.11",
+        "custom-windy-picker":"^1.0.17",
         "less": "4.2.0",
         "rollup-plugin-watch-globs": "2.0.1",
         "ts-import": "^5.0.0-beta.0"

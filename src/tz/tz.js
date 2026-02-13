@@ -1,4 +1,4 @@
-const thisYear = 2025;
+const thisYear = 2026;
 const { log } = console;
 
 /** array of unique polygons names:   contains:
@@ -125,17 +125,18 @@ function pointInPoly(ll, vs) {
 
 function showTzPoly(geoJson, color) {
     if (!window.tz.dataLoaded) return;
-    tz.singleTzLayer?.remove();
+    console.log(tz)
+    if (tz.singleTzLayer && map.hasLayer(tz.singleTzLayer)) tz.singleTzLayer.remove();
     tz.singleTzLayer = L.geoJSON(geoJson, { style: { color, fillOpacity: 0 }, interactive: false }).addTo(map);
 }
 
 function removeTzPoly() {
     if (!window.tz.dataLoaded) return;
-    tz.singleTzLayer?.remove();
+    if (map.hasLayer(tz.singleTzLayer)) tz.singleTzLayer.remove();
 }
 
 function findTzPoly(lon, lat) {
-    if (!window.tz.dataLoaded) return "tz data not loaded";
+    if (!window.tz.dataLoaded) return 'tz data not loaded';
     let possibles = [];
     let found = allPolys.features.filter(
         ({
@@ -201,13 +202,13 @@ function ruleAndDST(gj, ts) {
 function removeZones(toDel = null) {
     if (!toDel) {
         for (let l of tz.tzLayers) {
-            l.layer.remove();
+            if (map.hasLayer(l.layer)) l.layer.remove();
         }
         tz.tzLayers = [];
     } else {
         tz.tzLayers.forEach(l => {
             if (toDel.includes(l.filename)) {
-                l.layer.remove();
+                if (map.hasLayer(l.layer)) l.layer.remove();
                 l.filename = null; //mark to filter
             }
         });

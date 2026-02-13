@@ -44,10 +44,10 @@ function drawLine(body, p1, p2) {
     if (!map.hasLayer(l)) l.addTo(map);
 }
 
-function removeLines(body) {
-    log("REMOVE LINES", body)
-    if (body === undefined || body === 'sun') map.removeLayer(sunLine);
-    if (body === undefined || body === 'moon') map.removeLayer(moonLine);
+function removeLines(celBody) {
+    //log("REMOVE LINES", celBody)
+    if ((celBody === undefined || celBody === 'sun') && map.hasLayer(sunLine)) map.removeLayer(sunLine);
+    if ((celBody === undefined || celBody === 'moon') && map.hasLayer(moonLine))   map.removeLayer(moonLine);
 }
 
 export { drawLine, removeLines };

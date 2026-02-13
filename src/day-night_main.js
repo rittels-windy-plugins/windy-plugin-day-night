@@ -65,7 +65,7 @@ function init(plgn, setUseOwnTimeFun) {
     thisPlugin = plgn;
     setUseOwnTime = setUseOwnTimeFun;
 
-    node = $('#plugin-' + plgn.ident);
+    node = document.getElementById('plugin-' + thisPlugin.ident);
     ({ refs } = getRefs(node));
 
     // important to close the windy picker
@@ -89,6 +89,7 @@ function init(plgn, setUseOwnTimeFun) {
     if (!devMode) loggerTO = setTimeout(logMessage, 1000 * 60 * 3, '3min');
     //
 
+    pickerT.openMarker({ lat: -30, lon: 30 });
     // click stuff, IMPORTANT
     singleclick.singleclick.on(name, pickerT.openMarker);
     bcast.on('pluginOpened', onPluginOpened);

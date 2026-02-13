@@ -31,9 +31,9 @@ export function createMapLayers() {
             right: L.polyline([], { stroke: true, weight: 1, color, smoothFactor: 1 }),
         });
         nightPolys.push({
-            middle: L.polygon([], { stroke: false, weight: 1, color, fillOpacity: 0.08, smoothFactor: 1 }),
-            left: L.polygon([], { stroke: false, weight: 1, color, fillOpacity: 0.08, smoothFactor: 1 }),
-            right: L.polygon([], { stroke: false, weight: 1, color, fillOpacity: 0.08, smoothFactor: 1 }),
+            middle: L.polygon([], { interactive:false, stroke: false, weight: 1, color, fillOpacity: 0.08, smoothFactor: 1 }),
+            left: L.polygon([], { interactive:false, stroke: false, weight: 1, color, fillOpacity: 0.08, smoothFactor: 1 }),
+            right: L.polygon([], { interactive:false, stroke: false, weight: 1, color, fillOpacity: 0.08, smoothFactor: 1 }),
         });
     });
     sunCircle = L.circleMarker([90, 0], { radius: 8, color: 'yellow' });
