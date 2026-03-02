@@ -132,7 +132,7 @@ function showTzPoly(geoJson, color) {
 
 function removeTzPoly() {
     if (!window.tz.dataLoaded) return;
-    if (map.hasLayer(tz.singleTzLayer)) tz.singleTzLayer.remove();
+    if (tz.singleTzLayer && map.hasLayer(tz.singleTzLayer)) tz.singleTzLayer.remove();
 }
 
 function findTzPoly(lon, lat) {
