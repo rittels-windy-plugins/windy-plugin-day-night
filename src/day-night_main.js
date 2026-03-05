@@ -370,8 +370,8 @@ SunCalc.times[8][0] = store.get('day-night-custom-moon-altitude');
     store.insert('day-night-show-timezones',        { def: false, allowed: [true, false],           save: true });
     store.insert('day-night-show-picker-timezone',  { def: false, allowed: [true, false],           save: true });
     store.insert('day-night-timezone-opacity',      { def: 0.2, allowed: v => v >= 0 && v <= 1,     save: true });
-    store.insert('day-night-show-sun-geodesic',     { def: true, allowed: [true, false],            save: true });
-    store.insert('day-night-show-moon-geodesic',    { def: true, allowed: [true, false],            save: true });
+    store.insert('day-night-show-sun-geodesic',     { def: false, allowed: [true, false],            save: true });
+    store.insert('day-night-show-moon-geodesic',    { def: false, allowed: [true, false],            save: true });
     store.insert('day-night-show-sun',              { def: true, allowed: [true, false],            save: true });
     store.insert('day-night-show-moon',             { def: true, allowed: [true, false],            save: true });
 }

@@ -250,6 +250,7 @@
     }
 
     onMount(() => {
+        log("on mount");
         init(thisPlugin, setUseOwnTime);
 
         node = document.getElementById('plugin-' + thisPlugin.ident);
@@ -312,5 +313,5 @@
 </script>
 
 <style lang="less">
-    @import 'day-night.less?1771960177138';
+    @import 'day-night.less?1772440477451';
 </style>
