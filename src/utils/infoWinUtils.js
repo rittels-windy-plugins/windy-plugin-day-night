@@ -168,6 +168,30 @@ function makeTopLeftHandle(el, div, callback) {
     });
 }
 
+function setInfoSize(size, div) {
+    let { left, top, width, height } = size;
+    if (left === undefined) left = div.offsetLeft;
+    if (top === undefined) top = div.offsetTop;
+    if (width === undefined) width = div.offsetWidth;
+    if (height === undefined) height = div.offsetHeight;
+    const { id } = div;
+    const name = id.replace('-info', '');
+    div.style.left = left + 'px';
+    div.style.top = top + 'px';
+    div.style.height = height + 'px';
+    div.style.width = width + 'px';
+    bcast.fire('infoWinResized', {
+        left,
+        top,
+        width,
+        height,
+        id,
+        name,
+        dragging: false,
+        wasDragged: false,
+    });
+}
+
 function getWrapDiv() {
     let wrapDiv = document.getElementById('ext-plugin-info-wrapper');
     if (!wrapDiv) {
@@ -281,4 +305,5 @@ export {
     openFullscreen,
     closeFullscreen,
     toggleFullscreen,
+    setInfoSize
 };
